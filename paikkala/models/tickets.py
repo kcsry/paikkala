@@ -1,6 +1,17 @@
+import random
+
 from django.conf import settings
 from django.db import models
-from django.utils.crypto import get_random_string
+
+
+def generate_key():
+    key = ''
+    while len(key) < 8:
+        char = random.choice('aaaiiioooeeecdfghjklmqrtuv')
+        if key.endswith(char):
+            continue
+        key += char
+    return key
 
 
 class Ticket(models.Model):
@@ -19,7 +30,7 @@ class Ticket(models.Model):
 
     def save(self, **kwargs):
         if not self.key:
-            self.key = get_random_string(8, 'acdefghjklmqrtuvwxyz')
+            self.key = generate_key()
         return super().save(**kwargs)
 
     def __str__(self):
