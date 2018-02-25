@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Baikal</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+        }
+        main {
+            max-width: 70em;
+            margin: auto;
+        }
+        nav {
+            background: #006AA7;
+            border-radius: 0 0 0.5em 0.5em;
+        }
+        nav h1 {
+            color: #fff;
+            margin: 0;
+            padding: 0.5em;
+        }
+        nav h1 a {
+            color: #f0f6e8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <nav>
+        <h1><a href="/">Baikal – Paikkala Test App</a></h1>
+    </nav>
+    {% block content %}
+    {% endblock %}
+</main>
+</body>
+</html>

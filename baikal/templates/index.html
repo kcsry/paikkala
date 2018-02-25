@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+    <div style="display: flex">
+        <div style="flex: 1">
+            <h2>Issued Tickets</h2>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Program</th>
+                        <th>Zone</th>
+                        <th>Row</th>
+                        <th>Num</th>
+                        <th>Key</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                        <tr>
+                            <td>{{ ticket.program }}</td>
+                            <td>{{ ticket.zone }}</td>
+                            <td>{{ ticket.row.name }}</td>
+                            <td>{{ ticket.number }}</td>
+                            <td>{{ ticket.key }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div style="flex: 1">
+            <h2>Programs</h2>
+            <ul>
+                {% for program in programs %}
+                    <li><a href="/{{ program.id }}/">{{ program }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
