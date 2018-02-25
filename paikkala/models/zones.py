@@ -33,5 +33,5 @@ class Zone(models.Model):
                 'remaining': row.capacity - reservation_count.get(row.id, 0),
             }
             for row
-            in self.rows.all()
+            in program.rows.filter(zone=self)
         }

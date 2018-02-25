@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import models
+from django.forms import CheckboxSelectMultiple
 
 from paikkala.models import Program, Ticket, Zone, Row
 
@@ -14,6 +16,9 @@ class ZoneAdmin(admin.ModelAdmin):
 
 class ProgramAdmin(admin.ModelAdmin):
     list_display = ('name', 'reservation_start', 'reservation_end', 'reserved_tickets', 'max_tickets')
+    formfield_overrides = {
+        models.ManyToManyField: {'widget': CheckboxSelectMultiple},
+    }
 
     def reserved_tickets(self, instance):
         return instance.tickets.count()

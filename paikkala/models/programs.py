@@ -15,13 +15,18 @@ class Program(models.Model):
     name = models.CharField(max_length=64)
     reservation_start = models.DateTimeField(blank=True, null=True)
     reservation_end = models.DateTimeField(blank=True, null=True)
-    zones = models.ManyToManyField('paikkala.Zone')
+    rows = models.ManyToManyField('paikkala.Row')
     max_tickets = models.IntegerField()
 
     objects = ProgramQuerySet.as_manager()
 
     def __str__(self):
         return '{name}'.format(name=self.name)
+
+    @property
+    def zones(self):
+        from paikkala.models import Zone
+        return Zone.objects.filter(rows__in=self.rows.all()).distinct()
 
     def is_reservable(self):
         if not (self.reservation_start and self.reservation_end):

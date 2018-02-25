@@ -4,7 +4,7 @@ from datetime import timedelta
 import pytest
 from django.utils.timezone import now
 
-from paikkala.models import Program
+from paikkala.models import Program, Row
 from paikkala.utils.importer import import_zones, read_csv_file
 
 sibeliustalo_rows = list(read_csv_file(os.path.join(os.path.dirname(__file__), 'sibeliustalo.txt')))
@@ -23,5 +23,5 @@ def jussi_program(sibeliustalo_zones):
         reservation_end=now() + timedelta(hours=1),
         max_tickets=100,
     )
-    program.zones.set(sibeliustalo_zones)
+    program.rows.set(Row.objects.filter(zone__in=sibeliustalo_zones))
     return program
