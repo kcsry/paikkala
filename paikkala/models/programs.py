@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Count
 from django.utils.timezone import now
 
 from paikkala.excs import NoCapacity, MaxTicketsReached, NoRowCapacity, Unreservable
