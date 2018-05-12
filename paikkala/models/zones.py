@@ -1,5 +1,24 @@
 from django.db import models
-from django.db.models import Sum, Count
+from django.db.models import Count, Sum
+
+
+class ZoneReservationStatus(dict):
+    def __init__(self, zone, program, data):
+        super(ZoneReservationStatus, self).__init__(data)
+        self.program = program
+        self.zone = zone
+
+    @property
+    def total_reserved(self):
+        return sum(r['reserved'] for r in self.values())
+
+    @property
+    def total_remaining(self):
+        return sum(r['remaining'] for r in self.values())
+
+    @property
+    def total_capacity(self):
+        return sum(r['capacity'] for r in self.values())
 
 
 class Zone(models.Model):
@@ -26,7 +45,7 @@ class Zone(models.Model):
         reservation_count = dict(
             self.tickets.filter(program=program).values('row').annotate(n=Count('id')).values_list('row', 'n')
         )
-        return {
+        data = {
             row: {
                 'capacity': row.capacity,
                 'reserved': reservation_count.get(row.id, 0),
@@ -35,3 +54,4 @@ class Zone(models.Model):
             for row
             in program.rows.filter(zone=self)
         }
+        return ZoneReservationStatus(zone=self, program=program, data=data)

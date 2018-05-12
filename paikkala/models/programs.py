@@ -47,6 +47,16 @@ class Program(models.Model):
             return False
         return (self.reservation_start <= now() <= self.reservation_end)
 
+    def check_reservable(self):
+        if not self.is_reservable():
+            raise Unreservable('{} is not reservable at this time'.format(self))
+        if self.remaining_tickets <= 0:
+            raise MaxTicketsReached('{} has no remaining tickets.'.format(self))
+
+    @property
+    def remaining_tickets(self):
+        return self.max_tickets - self.tickets.count()
+
     def reserve(self, zone, count, user=None, allow_scatter=False):
         """
         Reserve `count` tickets from the zone `zone`.
@@ -65,10 +75,9 @@ class Program(models.Model):
         """
         if count <= 0:  # pragma: no cover
             raise ValueError('Gotta reserve at least one ticket')
-        if not self.is_reservable():
-            raise Unreservable('{} is not reservable at this time'.format(self))
+        self.check_reservable()
         reservation_status = zone.get_reservation_status(program=self)
-        total_reserved = sum(r['reserved'] for r in reservation_status.values())
+        total_reserved = reservation_status.total_reserved
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached('Reserving {} more tickets would overdraw {}\'s ticket limit {}'.format(
                 count,
