@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Lippu / {{ ticket.program }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            color: #fff;
+            background: linear-gradient({{ program_style.angle }}deg, {{ program_style.color1 }}, {{ program_style.color2 }});
+            font-size: 32px;
+            text-align: center;
+            margin: 0;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+    </style>
+</head>
+<body>
+<h1>
+    {{ ticket.program }} &times; {{ tickets|length }}
+</h1>
+<ul>
+    {% for ticket in tickets %}
+        <li>{{ ticket.zone }} {{ ticket.number }}</li>
+    {% endfor %}
+</ul>
+</body>
+</html>
