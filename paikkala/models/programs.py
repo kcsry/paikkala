@@ -1,7 +1,8 @@
 from django.db import models
+from django.db.models import Q
 from django.utils.timezone import now
 
-from paikkala.excs import NoCapacity, MaxTicketsReached, NoRowCapacity, Unreservable
+from paikkala.excs import MaxTicketsReached, NoCapacity, NoRowCapacity, Unreservable
 
 
 class ProgramQuerySet(models.QuerySet):
@@ -10,11 +11,24 @@ class ProgramQuerySet(models.QuerySet):
             at = now()
         return self.filter(reservation_start__lte=at, reservation_end__gte=at)
 
+    def valid(self, at=None):
+        if not at:
+            at = now()
+        return self.filter(Q(invalid_after__isnull=True) | Q(invalid_after__gt=at))
+
 
 class Program(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(
+        max_length=64,
+        help_text='please be specific; this is not qualified by event name or similar',
+    )
     reservation_start = models.DateTimeField(blank=True, null=True)
     reservation_end = models.DateTimeField(blank=True, null=True)
+    invalid_after = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text='the time after which tickets for this program are considered out-of-date, e.g. for hiding from UI',
+    )
     rows = models.ManyToManyField('paikkala.Row')
     max_tickets = models.IntegerField()
 
