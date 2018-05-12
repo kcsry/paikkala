@@ -1,26 +1,11 @@
-from django.db import transaction
-from django.views.generic import ListView, UpdateView
+from django.views.generic import ListView
 
-from paikkala.forms import ReservationForm
 from paikkala.models import Program, Ticket
+from paikkala.views import ReservationView as BaseReservationView
 
 
-class ReservationView(UpdateView):
-    model = Program
-    form_class = ReservationForm
+class ReservationView(BaseReservationView):
     template_name = 'reserve.html'
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
-
-    def get_success_url(self):
-        return '/'
-
-    def form_valid(self, form):
-        with transaction.atomic():
-            return super().form_valid(form)
 
 
 class IndexView(ListView):
