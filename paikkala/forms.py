@@ -1,16 +1,14 @@
 from django import forms
+from django.core.validators import MaxValueValidator
 
-from paikkala.models import Zone, Program
+from paikkala.fields import ReservationZoneChoiceField, ReservationZoneSelect
+from paikkala.models import Program, Zone
 
 
 class ReservationForm(forms.ModelForm):
     max_count = 5
 
-    zone = forms.ModelChoiceField(
-        empty_label=None,
-        queryset=Zone.objects.none(),
-        widget=forms.RadioSelect(),
-    )
+    zone = ReservationZoneChoiceField(queryset=Zone.objects.none(), empty_label=None)
     count = forms.IntegerField(min_value=1, initial=1)
 
     class Meta:
@@ -20,7 +18,28 @@ class ReservationForm(forms.ModelForm):
     def __init__(self, **kwargs):
         self.user = kwargs.pop('user', None)
         super(ReservationForm, self).__init__(**kwargs)
-        self.fields['zone'].queryset = self.instance.zones.all().order_by('name')
+        self.mangle_count_field()
+        self.mangle_zone_field()
+
+    def mangle_zone_field(self):
+        zone_field = self.fields['zone']
+        zone_field.queryset = self.instance.zones.all().order_by('name')
+
+        if isinstance(zone_field, ReservationZoneChoiceField):
+            # This additional magic is required because widgets don't have access to their
+            # parent fields.  That would be all too easy.
+            zone_field.choices = [(z.id, z) for z in zone_field.queryset]
+            zone_field.populate_reservation_statuses(program=self.instance)
+            zone_field.widget = ReservationZoneSelect(
+                attrs=None,
+                choices=zone_field.choices,
+                reservation_statuses=zone_field.reservation_statuses,
+                format_label=zone_field.label_from_instance,
+            )
+
+    def mangle_count_field(self):
+        if self.max_count:
+            self.fields['count'].validators.append(MaxValueValidator(self.max_count))
 
     def save(self, commit=True):
         assert commit
