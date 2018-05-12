@@ -57,3 +57,5 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
 }
+
+PAIKKALA_STYLE_SECRET_SAUCE = 'garlic'

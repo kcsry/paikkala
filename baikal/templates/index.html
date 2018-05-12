@@ -11,6 +11,7 @@
                         <th>Row</th>
                         <th>Num</th>
                         <th>Key</th>
+                        <th>Inspect</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -21,6 +22,7 @@
                             <td>{{ ticket.row.name }}</td>
                             <td>{{ ticket.number }}</td>
                             <td>{{ ticket.key }}</td>
+                            <td><a href="{% url "inspect" pk=ticket.pk key=ticket.key %}">&#x1F440;</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -30,7 +32,7 @@
             <h2>Programs</h2>
             <ul>
                 {% for program in programs %}
-                    <li><a href="/{{ program.id }}/">{{ program }}</a></li>
+                    <li><a href="{% url "reserve" pk=program.pk %}">{{ program }}</a></li>
                 {% endfor %}
             </ul>
         </div>

@@ -1,11 +1,6 @@
 from django.views.generic import ListView
 
 from paikkala.models import Program, Ticket
-from paikkala.views import ReservationView as BaseReservationView
-
-
-class ReservationView(BaseReservationView):
-    template_name = 'reserve.html'
 
 
 class IndexView(ListView):
