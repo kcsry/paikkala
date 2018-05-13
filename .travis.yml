@@ -8,8 +8,7 @@ env:
 python:
   - "3.6"
 install:
-  - pip install -U pip
-  - pip install -U tox-travis tox
+  - pip install -U coverage pip setuptools tox tox-travis wheel
 script:
   - tox
 after_success:
