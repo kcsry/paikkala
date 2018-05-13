@@ -1,19 +1,8 @@
 import pytest
-from django.test import Client
 from django.urls import reverse
-from django.utils.crypto import get_random_string
 from django.utils.encoding import force_text
 
 from paikkala.models import Ticket
-
-
-@pytest.fixture
-def user_client(django_user_model):
-    user = django_user_model.objects.create_user(username=get_random_string())
-    client = Client()
-    client.force_login(user)
-    client.user = user
-    return client
 
 
 @pytest.mark.django_db

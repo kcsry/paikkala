@@ -1,8 +1,6 @@
 from django.contrib import admin
-from django.db import models
-from django.forms import CheckboxSelectMultiple
 
-from paikkala.models import Program, Ticket, Zone, Row
+from paikkala.models import Program, Row, Ticket, Zone
 
 
 class RowInline(admin.TabularInline):
@@ -15,10 +13,19 @@ class ZoneAdmin(admin.ModelAdmin):
 
 
 class ProgramAdmin(admin.ModelAdmin):
-    list_display = ('name', 'reservation_start', 'reservation_end', 'reserved_tickets', 'max_tickets')
-    formfield_overrides = {
-        models.ManyToManyField: {'widget': CheckboxSelectMultiple},
-    }
+    list_display = (
+        'name',
+        'reservation_start',
+        'reservation_end',
+        'reserved_tickets',
+        'max_tickets',
+        'require_user',
+        'max_tickets_per_user',
+        'max_tickets_per_batch',
+    )
+    filter_horizontal = (
+        'rows',
+    )
 
     def reserved_tickets(self, instance):
         return instance.tickets.count()
