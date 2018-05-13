@@ -5,6 +5,7 @@ from paikkala.models import Program, Row, Ticket, Zone
 
 class RowInline(admin.TabularInline):
     model = Row
+    readonly_fields = ('capacity',)
 
 
 class ZoneAdmin(admin.ModelAdmin):
