@@ -1,9 +1,12 @@
+from datetime import timedelta
+
 import pytest
 from django.contrib.auth.models import AnonymousUser
+from django.utils.timezone import now
 
 from paikkala.excs import BatchSizeOverflow, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable, \
     UserRequired
-from paikkala.models import Program
+from paikkala.models import Program, Zone, Row
 
 
 @pytest.mark.django_db
@@ -86,3 +89,22 @@ def test_reserve_batch_limits(jussi_program, random_user):
 
     with pytest.raises(BatchSizeOverflow):
         list(jussi_program.reserve(zone=zone, count=7, user=random_user))
+
+
+@pytest.mark.django_db
+def test_excluded_numbers():
+    zone = Zone.objects.create(name='lattia')
+    row = Row.objects.create(zone=zone, start_number=1, end_number=10, excluded_numbers='3,4,5')
+    assert row.capacity == 7
+    t = now()
+    program = Program.objects.create(
+        name='program',
+        max_tickets=100,
+        reservation_start=t,
+        reservation_end=t + timedelta(days=1),
+    )
+    program.rows.set([row])
+
+
+    tickets = list(program.reserve(zone=zone, count=7))
+    assert [t.number for t in tickets] == [1,2,6,7,8,9,10]
