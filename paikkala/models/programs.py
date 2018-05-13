@@ -25,10 +25,14 @@ class ProgramQuerySet(models.QuerySet):
 
 
 class Program(models.Model):
+    event_name = models.CharField(
+        max_length=64,
+        help_text='Used to form a longer name for the program.',
+    )
     name = models.CharField(
         max_length=64,
-        help_text='please be specific; this is not qualified by event name or similar',
     )
+    description = models.TextField(blank=True)
     reservation_start = models.DateTimeField(blank=True, null=True)
     reservation_end = models.DateTimeField(blank=True, null=True)
     invalid_after = models.DateTimeField(
@@ -45,6 +49,15 @@ class Program(models.Model):
     objects = ProgramQuerySet.as_manager()
 
     def __str__(self):
+        return self.long_name
+
+    @property
+    def long_name(self):
+        if self.event_name:
+            return '{event_name}: {name}'.format(
+                event_name=self.event_name,
+                name=self.name,
+            )
         return '{name}'.format(name=self.name)
 
     @property
