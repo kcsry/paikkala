@@ -16,6 +16,7 @@ class ZoneAdmin(admin.ModelAdmin):
 class ProgramAdmin(admin.ModelAdmin):
     list_display = (
         'name',
+        'event_name',
         'reservation_start',
         'reservation_end',
         'reserved_tickets',
@@ -26,6 +27,12 @@ class ProgramAdmin(admin.ModelAdmin):
     )
     filter_horizontal = (
         'rows',
+    )
+    list_filter = (
+        'event_name',
+    )
+    search_fields = (
+        'name',
     )
 
     def reserved_tickets(self, instance):

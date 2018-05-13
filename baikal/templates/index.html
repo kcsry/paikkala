@@ -32,7 +32,13 @@
             <h2>Programs</h2>
             <ul>
                 {% for program in programs %}
-                    <li><a href="{% url "reserve" pk=program.pk %}">{{ program }}</a></li>
+                    <li>
+                        <a href="{% url "reserve" pk=program.pk %}">{{ program }}</a>
+                        {% if program.description %}
+                            <br>
+                            {{ program.description }}
+                        {% endif %}
+                    </li>
                 {% endfor %}
             </ul>
         </div>
