@@ -10,5 +10,17 @@ class MaxTicketsReached(NoCapacity):
     pass
 
 
+class MaxTicketsPerUserReached(NoCapacity):
+    pass
+
+
+class BatchSizeOverflow(NoCapacity):
+    pass
+
+
 class Unreservable(RuntimeError):
+    pass
+
+
+class UserRequired(ValueError):
     pass

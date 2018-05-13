@@ -1,6 +1,8 @@
 import pytest
+from django.contrib.auth.models import AnonymousUser
 
-from paikkala.excs import NoCapacity, MaxTicketsReached, Unreservable
+from paikkala.excs import BatchSizeOverflow, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable, \
+    UserRequired
 from paikkala.models import Program
 
 
@@ -47,3 +49,40 @@ def test_reserve_scatter(jussi_program):
     assert sum(r['reserved'] for r in rstat.values()) == n_to_reserve  # Reservations line up
     assert sum(r['remaining'] for r in rstat.values()) == zone.capacity - n_to_reserve  # Free slots line up
     assert any(r['reserved'] and r['capacity'] for r in rstat.values())  # Check that we have semi-reserved rows
+
+
+@pytest.mark.django_db
+def test_reserve_user_required(jussi_program):
+    jussi_program.require_user = True
+    jussi_program.save()
+    anon = AnonymousUser()
+    zone = jussi_program.zones.get(name='Permanto')
+
+    with pytest.raises(UserRequired):
+        list(jussi_program.reserve(zone=zone, count=1, user=anon))
+
+    with pytest.raises(UserRequired):
+        list(jussi_program.reserve(zone=zone, count=1, user=None))
+
+
+@pytest.mark.django_db
+def test_reserve_user_limits(jussi_program, random_user):
+    jussi_program.require_user = True
+    jussi_program.max_tickets_per_user = 2
+    jussi_program.save()
+    zone = jussi_program.zones.get(name='Permanto')
+
+    assert len(list(jussi_program.reserve(zone=zone, count=2, user=random_user))) == 2
+
+    with pytest.raises(MaxTicketsPerUserReached):
+        list(jussi_program.reserve(zone=zone, count=1, user=random_user))
+
+
+@pytest.mark.django_db
+def test_reserve_batch_limits(jussi_program, random_user):
+    jussi_program.max_tickets_per_batch = 5
+    jussi_program.save()
+    zone = jussi_program.zones.get(name='Permanto')
+
+    with pytest.raises(BatchSizeOverflow):
+        list(jussi_program.reserve(zone=zone, count=7, user=random_user))

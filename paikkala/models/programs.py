@@ -2,7 +2,14 @@ from django.db import models
 from django.db.models import Q
 from django.utils.timezone import now
 
-from paikkala.excs import MaxTicketsReached, NoCapacity, NoRowCapacity, Unreservable
+from paikkala.excs import (
+    BatchSizeOverflow,
+    MaxTicketsPerUserReached,
+    MaxTicketsReached,
+    NoCapacity,
+    NoRowCapacity,
+    Unreservable,
+    UserRequired)
 
 
 class ProgramQuerySet(models.QuerySet):
@@ -31,6 +38,9 @@ class Program(models.Model):
     )
     rows = models.ManyToManyField('paikkala.Row')
     max_tickets = models.IntegerField()
+    require_user = models.BooleanField(default=False)
+    max_tickets_per_user = models.IntegerField(default=1000)
+    max_tickets_per_batch = models.IntegerField(default=50)
 
     objects = ProgramQuerySet.as_manager()
 
@@ -73,17 +83,45 @@ class Program(models.Model):
         :param allow_scatter: Whether to allow allocating tickets from scattered rows.
         :return:
         """
+        if user and user.is_anonymous:
+            user = None
+
+        if not user and self.require_user:
+            raise UserRequired('{program} does not allow anonymous ticketing'.format(
+                program=self,
+            ))
+
         if count <= 0:  # pragma: no cover
             raise ValueError('Gotta reserve at least one ticket')
+
+        if count > self.max_tickets_per_batch:
+            raise BatchSizeOverflow(
+                'Can only reserve {limit} tickets per batch for {program}, {n} attempted'.format(
+                    limit=self.max_tickets_per_batch,
+                    n=count,
+                    program=self,
+                )
+            )
         self.check_reservable()
         reservation_status = zone.get_reservation_status(program=self)
         total_reserved = reservation_status.total_reserved
         if total_reserved + count > self.max_tickets:
-            raise MaxTicketsReached('Reserving {} more tickets would overdraw {}\'s ticket limit {}'.format(
-                count,
-                self,
-                self.max_tickets,
-            ))
+            raise MaxTicketsReached(
+                'Reserving {n} more tickets would overdraw {program}\'s ticket limit {limit}'.format(
+                    n=count,
+                    program=self,
+                    limit=self.max_tickets,
+                )
+            )
+        if user and self.tickets.filter(user=user).count() + count > self.max_tickets_per_user:
+            raise MaxTicketsPerUserReached(
+                '{user} reserving {n} more tickets would overdraw {program}\'s per-user ticket limit {limit}'.format(
+                    user=user,
+                    n=count,
+                    program=self,
+                    limit=self.max_tickets_per_user,
+                )
+            )
         new_reservations = []
         reserve_count = count  # Count remaining to reserve
         for row, row_status in sorted(reservation_status.items(), key=lambda pair: pair[1]['remaining']):
@@ -94,13 +132,16 @@ class Program(models.Model):
             if reserve_count <= 0:
                 break
         if reserve_count > 0:  # Oops, ran out of rows with tickets left unscattered
-            raise NoCapacity('Could not allocate {} of {} requested tickets in zone {}'.format(
-                reserve_count,
-                count,
-                zone,
+            raise NoCapacity('Could not allocate {remaining} of {n} requested tickets in zone {zone}'.format(
+                remaining=reserve_count,
+                n=count,
+                zone=zone,
             ))
         if not new_reservations:
-            raise NoRowCapacity('No single row in zone {} has {} tickets left (try scatter?)'.format(zone, count))
+            raise NoRowCapacity('No single row in zone {zone} has {n} tickets left (try scatter?)'.format(
+                zone=zone,
+                n=count,
+            ))
 
         for row, row_count in new_reservations:
             yield from row.reserve(program=self, count=row_count, user=user)
