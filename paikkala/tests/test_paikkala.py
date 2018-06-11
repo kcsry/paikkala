@@ -1,12 +1,9 @@
-from datetime import timedelta
-
 import pytest
 from django.contrib.auth.models import AnonymousUser
-from django.utils.timezone import now
 
 from paikkala.excs import BatchSizeOverflow, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable, \
     UserRequired
-from paikkala.models import Program, Zone, Row
+from paikkala.models import Program
 
 
 @pytest.mark.django_db
@@ -92,22 +89,10 @@ def test_reserve_batch_limits(jussi_program, random_user):
 
 
 @pytest.mark.django_db
-def test_excluded_numbers():
-    zone = Zone.objects.create(name='lattia')
-    row = Row.objects.create(zone=zone, start_number=1, end_number=10, excluded_numbers='3,4,5')
-    assert row.capacity == 7
-    t = now()
-    program = Program.objects.create(
-        name='program',
-        max_tickets=100,
-        reservation_start=t,
-        reservation_end=t + timedelta(days=1),
-    )
-    program.rows.set([row])
-
-
-    tickets = list(program.reserve(zone=zone, count=7))
-    assert [t.number for t in tickets] == [1,2,6,7,8,9,10]
+def test_excluded_numbers(lattia_program):
+    zone = lattia_program.zones[0]
+    tickets = list(lattia_program.reserve(zone=zone, count=7))
+    assert [t.number for t in tickets] == [1, 2, 6, 7, 8, 9, 10]
 
 
 @pytest.mark.django_db
@@ -116,3 +101,13 @@ def test_automatic_max_tickets(jussi_program):
     jussi_program.clean()  # As called by admin, etc.
     jussi_program.save()
     assert jussi_program.max_tickets == sum(jussi_program.rows.values_list('capacity', flat=True))
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('attempt_sequential', (False, True))
+def test_attempt_sequential(lattia_program, attempt_sequential):
+    zone = lattia_program.zones[0]
+    tickets = list(lattia_program.reserve(zone=zone, count=3, attempt_sequential=attempt_sequential))
+    assert [t.number for t in tickets] == (
+        [1, 2, 6] if not attempt_sequential else [6, 7, 8]
+    )

@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
 
+from paikkala.utils.runs import find_runs, following_integer
+
 
 class Row(models.Model):
     zone = models.ForeignKey('paikkala.Zone', related_name='rows', on_delete=models.CASCADE)
@@ -41,9 +43,20 @@ class Row(models.Model):
     def get_excluded_set(self):
         return set(int(number) for number in self.excluded_numbers.split(',') if number and number.isdigit())
 
-    def reserve(self, program, count, user=None):
+    def reserve(self, program, count, user=None, attempt_sequential=True):
         reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
         unreserved_numbers = [number for number in self.get_numbers() if number not in reserved_numbers]
+
+        if attempt_sequential and count > 1:
+            # Find runs of sequential numbers in the unreserved numbers.
+            sequential_runs = find_runs(unreserved_numbers, following_integer)
+            # Filter in only those that would have at least N seats left.
+            acceptable_sequential_runs = [run for run in sequential_runs if len(run) >= count]
+            # If one was found, use it as the source of seat numbers to reserve.
+            if acceptable_sequential_runs:
+                unreserved_numbers = acceptable_sequential_runs[0]
+                assert len(unreserved_numbers) >= count
+
         for x in range(count):
             number = unreserved_numbers.pop(0)
             yield program.tickets.create(
