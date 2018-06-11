@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
 
+from paikkala.utils.ranges import parse_number_set
 from paikkala.utils.runs import find_runs, following_integer
 
 
@@ -31,8 +32,8 @@ class Row(models.Model):
     def __str__(self):
         return '{zone} – {name}'.format(zone=self.zone.name, name=self.name)
 
-    def get_numbers(self):
-        excluded_set = self.get_excluded_set()
+    def get_numbers(self, additional_excluded_set=set()):
+        excluded_set = self.get_excluded_set() | additional_excluded_set
         return [
             number
             for number
@@ -41,11 +42,16 @@ class Row(models.Model):
         ]
 
     def get_excluded_set(self):
-        return set(int(number) for number in self.excluded_numbers.split(',') if number and number.isdigit())
+        return parse_number_set(self.excluded_numbers)
 
-    def reserve(self, program, count, user=None, attempt_sequential=True):
+    def reserve(self, program, count, user=None, attempt_sequential=True, excluded_numbers=set()):
         reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
-        unreserved_numbers = [number for number in self.get_numbers() if number not in reserved_numbers]
+        unreserved_numbers = [
+            number
+            for number
+            in self.get_numbers(additional_excluded_set=excluded_numbers)
+            if number not in reserved_numbers
+        ]
 
         if attempt_sequential and count > 1:
             # Find runs of sequential numbers in the unreserved numbers.
