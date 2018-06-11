@@ -92,7 +92,7 @@ class Program(models.Model):
     def remaining_tickets(self):
         return self.max_tickets - self.tickets.count()
 
-    def reserve(self, zone, count, user=None, allow_scatter=False):
+    def reserve(self, zone, count, user=None, allow_scatter=False, attempt_sequential=True):
         """
         Reserve `count` tickets from the zone `zone`.
 
@@ -106,6 +106,7 @@ class Program(models.Model):
         :param count:
         :param user:
         :param allow_scatter: Whether to allow allocating tickets from scattered rows.
+        :param attempt_sequential: Attempt allocation of sequential seats from each row.
         :return:
         """
         if user and user.is_anonymous:
@@ -169,4 +170,4 @@ class Program(models.Model):
             ))
 
         for row, row_count in new_reservations:
-            yield from row.reserve(program=self, count=row_count, user=user)
+            yield from row.reserve(program=self, count=row_count, user=user, attempt_sequential=attempt_sequential)
