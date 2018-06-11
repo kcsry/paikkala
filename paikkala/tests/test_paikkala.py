@@ -108,3 +108,11 @@ def test_excluded_numbers():
 
     tickets = list(program.reserve(zone=zone, count=7))
     assert [t.number for t in tickets] == [1,2,6,7,8,9,10]
+
+
+@pytest.mark.django_db
+def test_automatic_max_tickets(jussi_program):
+    jussi_program.automatic_max_tickets = True
+    jussi_program.clean()  # As called by admin, etc.
+    jussi_program.save()
+    assert jussi_program.max_tickets == sum(jussi_program.rows.values_list('capacity', flat=True))

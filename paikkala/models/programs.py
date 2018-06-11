@@ -45,11 +45,23 @@ class Program(models.Model):
     require_user = models.BooleanField(default=False)
     max_tickets_per_user = models.IntegerField(default=1000)
     max_tickets_per_batch = models.IntegerField(default=50)
+    automatic_max_tickets = models.BooleanField(
+        default=False,
+        help_text='Recompute the maximum tickets field automatically based on row capacity',
+    )
 
     objects = ProgramQuerySet.as_manager()
 
     def __str__(self):
         return self.long_name
+
+    def clean(self):
+        if self.automatic_max_tickets:
+            self.max_tickets = self.compute_max_tickets()
+
+    def compute_max_tickets(self):
+        rows = list(self.rows.all())
+        return (sum(row.capacity for row in rows) if rows else 0)
 
     @property
     def long_name(self):
