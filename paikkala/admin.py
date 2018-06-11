@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from paikkala.models import Program, Row, Ticket, Zone
+from paikkala.models.blocks import PerProgramBlock
 
 
 class RowInline(admin.TabularInline):
@@ -11,6 +12,10 @@ class RowInline(admin.TabularInline):
 class ZoneAdmin(admin.ModelAdmin):
     inlines = [RowInline]
     list_display = ('name', 'capacity')
+
+
+class PerProgramBlockInline(admin.TabularInline):
+    model = PerProgramBlock
 
 
 class ProgramAdmin(admin.ModelAdmin):
@@ -34,6 +39,9 @@ class ProgramAdmin(admin.ModelAdmin):
     search_fields = (
         'name',
     )
+    inlines = [
+        PerProgramBlockInline,
+    ]
 
     def reserved_tickets(self, instance):
         return instance.tickets.count()

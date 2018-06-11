@@ -89,13 +89,6 @@ def test_reserve_batch_limits(jussi_program, random_user):
 
 
 @pytest.mark.django_db
-def test_excluded_numbers(lattia_program):
-    zone = lattia_program.zones[0]
-    tickets = list(lattia_program.reserve(zone=zone, count=7))
-    assert [t.number for t in tickets] == [1, 2, 6, 7, 8, 9, 10]
-
-
-@pytest.mark.django_db
 def test_automatic_max_tickets(jussi_program):
     jussi_program.automatic_max_tickets = True
     jussi_program.clean()  # As called by admin, etc.

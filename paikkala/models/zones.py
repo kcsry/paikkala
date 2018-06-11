@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models import Count, Sum
 
+from paikkala.utils.blocks import get_per_program_blocks
+
 
 class ZoneReservationStatus(dict):
     def __init__(self, zone, program, data):
@@ -45,13 +47,20 @@ class Zone(models.Model):
         reservation_count = dict(
             self.tickets.filter(program=program).values('row').annotate(n=Count('id')).values_list('row', 'n')
         )
-        data = {
-            row: {
-                'capacity': row.capacity,
-                'reserved': reservation_count.get(row.id, 0),
-                'remaining': row.capacity - reservation_count.get(row.id, 0),
+        data = {}
+        block_map = get_per_program_blocks(program=program, zone=self)
+        for row in program.rows.filter(zone=self):
+            blocked = block_map[row.id]
+            capacity = len(row.get_numbers(additional_excluded_set=blocked))
+            reserved = reservation_count.get(row.id, 0)
+            data[row] = {
+                'capacity': capacity,
+                'reserved': reserved,
+                'remaining': capacity - reserved,
+                'blocked_set': blocked,
             }
-            for row
-            in program.rows.filter(zone=self)
-        }
-        return ZoneReservationStatus(zone=self, program=program, data=data)
+        return ZoneReservationStatus(
+            zone=self,
+            program=program,
+            data=data,
+        )

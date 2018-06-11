@@ -170,4 +170,10 @@ class Program(models.Model):
             ))
 
         for row, row_count in new_reservations:
-            yield from row.reserve(program=self, count=row_count, user=user, attempt_sequential=attempt_sequential)
+            yield from row.reserve(
+                program=self,
+                count=row_count,
+                user=user,
+                attempt_sequential=attempt_sequential,
+                excluded_numbers=reservation_status[row]['blocked_set'],
+            )
