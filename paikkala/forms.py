@@ -1,12 +1,19 @@
+import logging
+import time
+
 from django import forms
 from django.core.validators import MaxValueValidator
+from django.db import IntegrityError
 
 from paikkala.fields import ReservationZoneChoiceField, ReservationZoneSelect
 from paikkala.models import Program, Zone
 
+log = logging.getLogger(__name__)
+
 
 class ReservationForm(forms.ModelForm):
     max_count = 5
+    integrity_error_retries = 10
 
     zone = ReservationZoneChoiceField(queryset=Zone.objects.none(), empty_label=None)
     count = forms.IntegerField(min_value=1, initial=1)
@@ -43,10 +50,28 @@ class ReservationForm(forms.ModelForm):
 
     def save(self, commit=True):
         assert commit
-        return list(
-            self.instance.reserve(
-                user=self.user,
-                zone=self.cleaned_data['zone'],
-                count=self.cleaned_data['count'],
-            )
-        )
+        retry_attempts = self.integrity_error_retries
+        while True:
+            try:
+                return list(
+                    self.instance.reserve(
+                        user=self.user,
+                        zone=self.cleaned_data['zone'],
+                        count=self.cleaned_data['count'],
+                    )
+                )
+            except IntegrityError as ie:
+                if retry_attempts <= 0:
+                    raise
+                retry_attempts -= 1
+                log_message = (
+                    'Encountered IntegrityError when reserving {count} '
+                    'seats in zone {zone} for {program}; {n} retries left'
+                ).format(
+                    count=self.cleaned_data['count'],
+                    zone=self.cleaned_data['zone'],
+                    program=self.instance,
+                    n=retry_attempts,
+                )
+                log.warning(log_message, exc_info=True)
+                time.sleep(.3)
