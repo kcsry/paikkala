@@ -21,7 +21,8 @@ def jussi_program(sibeliustalo_zones):
 
 @pytest.fixture
 def lattia_program():
-    zone = Zone.objects.create(name='lattia', room=Room.objects.first())
+    room = Room.objects.create(name='huone')
+    zone = Zone.objects.create(name='lattia', room=room)
     row = Row.objects.create(zone=zone, start_number=1, end_number=10, excluded_numbers='3,4,5')
     assert row.capacity == 7
     t = now()
