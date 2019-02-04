@@ -35,6 +35,7 @@ class ReservationForm(forms.ModelForm):
         if isinstance(zone_field, ReservationZoneChoiceField):
             # This additional magic is required because widgets don't have access to their
             # parent fields.  That would be all too easy.
+            # ReservationZoneSelect.create_option will process the `z` object here to something sane.
             zone_field.choices = [(z.id, z) for z in zone_field.queryset]
             zone_field.populate_reservation_statuses(program=self.instance)
             zone_field.widget = ReservationZoneSelect(

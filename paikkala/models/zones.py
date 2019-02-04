@@ -24,11 +24,12 @@ class ZoneReservationStatus(dict):
 
 
 class Zone(models.Model):
+    room = models.ForeignKey('paikkala.Room', on_delete=models.PROTECT)
     name = models.CharField(max_length=100)
     capacity = models.IntegerField(editable=False, default=0)
 
     def __str__(self):
-        return '{name}'.format(name=self.name)
+        return '{room} / {name}'.format(room=self.room.name, name=self.name)
 
     def cache_total_capacity(self, save=False):
         self.capacity = self.rows.aggregate(capacity=Sum('capacity')).get('capacity', 0)

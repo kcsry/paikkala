@@ -1,4 +1,4 @@
-from paikkala.models import Zone
+from paikkala.models import Zone, Room
 
 
 def read_csv(infp, separator=','):
@@ -17,15 +17,19 @@ def read_csv_file(filename, separator=','):
 
 
 def import_zones(csv_list):
-    zones = {}
+    rooms_zones = {}
     for r_dict in csv_list:
-        zone = zones.get(r_dict['zone'])
+        room_name = r_dict.get('room', 'Room')
+        zone_name = r_dict['zone']
+        rz_key = (room_name, zone_name)
+        zone = rooms_zones.get(rz_key)
         if not zone:
-            zone = zones[r_dict['zone']] = Zone.objects.create(name=r_dict['zone'])
+            room, _ = Room.objects.get_or_create(name=room_name)
+            zone = rooms_zones[rz_key] = Zone.objects.create(room=room, name=zone_name)
         row = zone.rows.create(
             start_number=int(r_dict['start']),
             end_number=int(r_dict['end']),
             name=int(r_dict['row']),
         )
         assert row.capacity > 0
-    return list(zones.values())
+    return list(rooms_zones.values())

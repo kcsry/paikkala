@@ -30,7 +30,11 @@ class Row(models.Model):
         self.zone.cache_total_capacity(save=True)
 
     def __str__(self):
-        return '{zone} – {name}'.format(zone=self.zone.name, name=self.name)
+        return '{room} – {zone} – {name}'.format(
+            room=self.zone.room.name,
+            zone=self.zone.name,
+            name=self.name,
+        )
 
     def get_numbers(self, additional_excluded_set=set()):
         excluded_set = self.get_excluded_set() | additional_excluded_set

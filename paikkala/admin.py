@@ -1,7 +1,16 @@
 from django.contrib import admin
 
-from paikkala.models import Program, Row, Ticket, Zone
+from paikkala.models import Program, Row, Ticket, Zone, Room
 from paikkala.models.blocks import PerProgramBlock
+
+
+class OptimizedRowQueryMixin:
+
+    def get_field_queryset(self, db, db_field, request):
+        queryset = super().get_field_queryset(db, db_field, request)
+        if db_field.name in ('row', 'rows'):
+            queryset = (queryset or Row.objects.all()).select_related('zone', 'zone__room')
+        return queryset
 
 
 class RowInline(admin.TabularInline):
@@ -11,17 +20,25 @@ class RowInline(admin.TabularInline):
 
 class ZoneAdmin(admin.ModelAdmin):
     inlines = [RowInline]
-    list_display = ('name', 'capacity')
+    list_select_related = ('room',)
+    list_display = ('name', 'room', 'capacity')
+    list_filter = ('room',)
 
 
-class PerProgramBlockInline(admin.TabularInline):
+class RoomAdmin(admin.ModelAdmin):
+    search_fields = ('name',)
+    list_display = ('name',)
+
+
+class PerProgramBlockInline(OptimizedRowQueryMixin, admin.TabularInline):
     model = PerProgramBlock
 
 
-class ProgramAdmin(admin.ModelAdmin):
+class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
     list_display = (
         'name',
         'event_name',
+        'room',
         'reservation_start',
         'reservation_end',
         'reserved_tickets',
@@ -35,6 +52,10 @@ class ProgramAdmin(admin.ModelAdmin):
     )
     list_filter = (
         'event_name',
+        'room',
+    )
+    list_select_related = (
+        'room',
     )
     search_fields = (
         'name',
@@ -58,3 +79,4 @@ class TicketAdmin(admin.ModelAdmin):
 admin.site.register(Program, ProgramAdmin)
 admin.site.register(Ticket, TicketAdmin)
 admin.site.register(Zone, ZoneAdmin)
+admin.site.register(Room, RoomAdmin)

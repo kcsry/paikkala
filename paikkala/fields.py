@@ -40,7 +40,7 @@ class ReservationZoneChoiceField(ModelChoiceField):
         if obj in self.reservation_statuses:
             info = self.reservation_statuses[obj]
             return force_text(self.label_format).format(
-                zone=obj,
+                zone=obj.name,
                 capacity=info.total_capacity,
                 reserved=info.total_reserved,
                 remaining=info.total_remaining,
