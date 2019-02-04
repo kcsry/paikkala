@@ -6,13 +6,15 @@ from django.utils.timezone import now
 from paikkala.models import Program, Row
 from paikkala.utils.importer import import_zones, read_csv_file
 
+SIBELIUSTALO_DEFAULT_ROOM_NAME = 'Pääsali'
+
 
 def get_sibeliustalo_rows():
     return list(read_csv_file(os.path.join(os.path.dirname(__file__), 'sibeliustalo.txt')))
 
 
 def import_sibeliustalo_zones():
-    return import_zones(get_sibeliustalo_rows(), default_room_name='Pääsali')
+    return import_zones(get_sibeliustalo_rows(), default_room_name=SIBELIUSTALO_DEFAULT_ROOM_NAME)
 
 
 def create_jussi_program(zones, room=None):
