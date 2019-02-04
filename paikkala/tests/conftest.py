@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta
 
 import pytest
@@ -6,35 +5,24 @@ from django.test import Client
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
-from paikkala.models import Program, Row, Zone, Room
-from paikkala.utils.importer import import_zones, read_csv_file
-
-sibeliustalo_rows = list(read_csv_file(os.path.join(os.path.dirname(__file__), 'sibeliustalo.txt')))
+from paikkala.models import Program, Room, Row, Zone
+from paikkala.tests.demo_data import import_sibeliustalo_zones, create_jussi_program
 
 
 @pytest.fixture
 def sibeliustalo_zones():
-    return import_zones(sibeliustalo_rows)
+    return import_sibeliustalo_zones()
 
 
 @pytest.fixture
 def jussi_program(sibeliustalo_zones):
-    room = sibeliustalo_zones[0].room
-    program = Program.objects.create(
-        room=room,
-        name='Jussi laskeutuu katosta enkelikuoron saattelemana',
-        reservation_start=now() - timedelta(hours=1),
-        reservation_end=now() + timedelta(hours=1),
-        max_tickets=100,
-        max_tickets_per_batch=1000,
-    )
-    program.rows.set(Row.objects.filter(zone__in=sibeliustalo_zones))
-    return program
+    return create_jussi_program(sibeliustalo_zones)
 
 
 @pytest.fixture
 def lattia_program():
-    zone = Zone.objects.create(name='lattia', room=Room.objects.first())
+    room = Room.objects.create(name='huone')
+    zone = Zone.objects.create(name='lattia', room=room)
     row = Row.objects.create(zone=zone, start_number=1, end_number=10, excluded_numbers='3,4,5')
     assert row.capacity == 7
     t = now()
