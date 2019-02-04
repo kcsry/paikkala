@@ -16,10 +16,10 @@ def read_csv_file(filename, separator=','):
         yield from read_csv(infp, separator)
 
 
-def import_zones(csv_list):
+def import_zones(csv_list, default_room_name='Room'):
     rooms_zones = {}
     for r_dict in csv_list:
-        room_name = r_dict.get('room', 'Room')
+        room_name = r_dict.get('room', default_room_name)
         zone_name = r_dict['zone']
         rz_key = (room_name, zone_name)
         zone = rooms_zones.get(rz_key)
