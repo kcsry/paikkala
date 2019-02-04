@@ -54,6 +54,6 @@ class Ticket(models.Model):
     def __str__(self):
         return '{program} – {zone} – {number}'.format(
             program=self.program.name,
-            zone=self.zone,
+            zone=self.zone.name,
             number=self.number,
         )

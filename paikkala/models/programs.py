@@ -40,6 +40,7 @@ class Program(models.Model):
         null=True,
         help_text='the time after which tickets for this program are considered out-of-date, e.g. for hiding from UI',
     )
+    room = models.ForeignKey('paikkala.Room', on_delete=models.PROTECT)
     rows = models.ManyToManyField('paikkala.Row')
     max_tickets = models.IntegerField()
     require_user = models.BooleanField(default=False)
