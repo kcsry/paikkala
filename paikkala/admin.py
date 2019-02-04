@@ -67,6 +67,13 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
     def reserved_tickets(self, instance):
         return instance.tickets.count()
 
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        # Deferred calculation of max tickets when creating a new Program
+        if not change and form.instance.automatic_max_tickets:
+            form.instance.clean()
+            form.instance.save(update_fields=('max_tickets',))
+
 
 class TicketAdmin(admin.ModelAdmin):
     list_select_related = ('program', 'zone', 'row')

@@ -57,7 +57,7 @@ class Program(models.Model):
         return self.long_name
 
     def clean(self):
-        if self.automatic_max_tickets:
+        if self.automatic_max_tickets and self.id:
             self.max_tickets = self.compute_max_tickets()
 
     def compute_max_tickets(self):
