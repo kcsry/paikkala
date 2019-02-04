@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.conf.urls import url
 
-from baikal.views import IndexView
-from paikkala.views import InspectionView, ReservationView, RelinquishView
+from baikal.views import IndexView, InspectionView
+from paikkala.views import ReservationView, RelinquishView
 
 urlpatterns = [
     url('^admin/', admin.site.urls),
