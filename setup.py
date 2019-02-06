@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='paikkala',
@@ -9,7 +9,7 @@ setup(
     author='Aarni Koskela',
     author_email='akx@desucon.fi',
     url='https://github.com/kcsry/paikkala',
-    packages=['paikkala', 'paikkala.migrations'],
+    packages=find_packages(exclude=['baikal', 'paikkala.tests']),
     package_data={'paikkala': ['static/paikkala/*']},
     include_package_data=True,
     zip_safe=False,
