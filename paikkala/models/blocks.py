@@ -1,7 +1,6 @@
-from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
 
-from paikkala.utils.ranges import parse_number_set
+from paikkala.utils.ranges import parse_number_set, validate_number_set
 
 
 class PerProgramBlock(models.Model):
@@ -10,7 +9,7 @@ class PerProgramBlock(models.Model):
     excluded_numbers = models.CharField(
         blank=True,
         max_length=128,
-        validators=[validate_comma_separated_integer_list],
+        validators=[validate_number_set],
         help_text='seat numbers to block from this row in this program',
     )
 

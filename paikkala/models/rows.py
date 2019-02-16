@@ -1,8 +1,7 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_comma_separated_integer_list
 from django.db import models
 
-from paikkala.utils.ranges import parse_number_set
+from paikkala.utils.ranges import parse_number_set, validate_number_set
 from paikkala.utils.runs import find_runs, following_integer
 
 
@@ -15,7 +14,7 @@ class Row(models.Model):
     excluded_numbers = models.CharField(
         blank=True,
         max_length=128,
-        validators=[validate_comma_separated_integer_list],
+        validators=[validate_number_set],
         help_text='seat numbers to consider not part of the row; comma-separated integers',
     )
 

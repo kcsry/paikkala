@@ -13,7 +13,7 @@ def test_per_program_blocks(lattia_program):
     zone = lattia_program.zones[0]
     lattia_program.blocks.create(
         row=zone.rows.get(),
-        excluded_numbers='6,7',
+        excluded_numbers='6-8,!8',
     )
     tickets = list(lattia_program.reserve(zone=zone, count=5))
     assert [t.number for t in tickets] == [1, 2, 8, 9, 10]
