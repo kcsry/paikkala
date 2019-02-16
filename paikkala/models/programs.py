@@ -63,8 +63,8 @@ class Program(models.Model):
             self.max_tickets = self.compute_max_tickets()
 
     def compute_max_tickets(self):
-        rows = list(self.rows.all())
-        return (sum(row.capacity for row in rows) if rows else 0)
+        number_map = dict(self.get_rows_and_numbers())
+        return sum((len(number_set) for number_set in number_map.values()), 0)
 
     @property
     def long_name(self):
@@ -81,11 +81,32 @@ class Program(models.Model):
         return Zone.objects.filter(rows__in=self.rows.all()).distinct()
 
     def get_block_map(self, zone=None):
+        """
+        Get a dict mapping row IDs to a set of blocked Numbers per row.
+
+        :param zone: Optional zone to filter for.
+        :return: Dict of row ID <-> excluded numbers set
+        """
         blocks_by_row_id = defaultdict(set)
         qs = (self.blocks.filter(row__zone=zone) if zone else self.blocks.all())
         for block in qs:
             blocks_by_row_id[block.row_id] |= block.get_excluded_set()
         return blocks_by_row_id
+
+    def get_rows_and_numbers(self, zone=None):
+        """
+        Iterate over Row objects and Numbers available in them,
+        taking into account row blocks and per-program blocks.
+
+        This is the most efficient way of acquiring this information.
+
+        :param zone: Optional zone to filter for.
+        :return: Generator over (row, numbers) pairs.
+        """
+        row_qs = (self.rows.filter(zone=zone) if zone else self.rows.all())
+        block_map = self.get_block_map(zone=zone)
+        for row in row_qs:
+            yield (row, row.get_numbers(additional_excluded_set=block_map.get(row.id, set())))
 
     def is_reservable(self):
         if not (self.reservation_start and self.reservation_end):
