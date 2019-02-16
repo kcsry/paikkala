@@ -1,8 +1,6 @@
 from django.db import models
 from django.db.models import Count, Sum
 
-from paikkala.utils.blocks import get_per_program_blocks
-
 
 class ZoneReservationStatus(dict):
     def __init__(self, zone, program, data):
@@ -49,7 +47,7 @@ class Zone(models.Model):
             self.tickets.filter(program=program).values('row').annotate(n=Count('id')).values_list('row', 'n')
         )
         data = {}
-        block_map = get_per_program_blocks(program=program, zone=self)
+        block_map = program.get_block_map(zone=self)
         for row in program.rows.filter(zone=self):
             blocked = block_map[row.id]
             capacity = len(row.get_numbers(additional_excluded_set=blocked))

@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.db import models
 from django.db.models import Q
 from django.utils.timezone import now
@@ -77,6 +79,13 @@ class Program(models.Model):
     def zones(self):
         from paikkala.models import Zone
         return Zone.objects.filter(rows__in=self.rows.all()).distinct()
+
+    def get_block_map(self, zone=None):
+        blocks_by_row_id = defaultdict(set)
+        qs = (self.blocks.filter(row__zone=zone) if zone else self.blocks.all())
+        for block in qs:
+            blocks_by_row_id[block.row_id] |= block.get_excluded_set()
+        return blocks_by_row_id
 
     def is_reservable(self):
         if not (self.reservation_start and self.reservation_end):
