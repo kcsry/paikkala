@@ -4,6 +4,7 @@ import time
 from django import forms
 from django.core.validators import MaxValueValidator
 from django.db import IntegrityError
+from django.db.transaction import atomic
 
 from paikkala.fields import ReservationZoneChoiceField, ReservationZoneSelect
 from paikkala.models import Program, Zone
@@ -54,13 +55,14 @@ class ReservationForm(forms.ModelForm):
         retry_attempts = self.integrity_error_retries
         while True:
             try:
-                return list(
-                    self.instance.reserve(
-                        user=self.user,
-                        zone=self.cleaned_data['zone'],
-                        count=self.cleaned_data['count'],
+                with atomic():
+                    return list(
+                        self.instance.reserve(
+                            user=self.user,
+                            zone=self.cleaned_data['zone'],
+                            count=self.cleaned_data['count'],
+                        )
                     )
-                )
             except IntegrityError as ie:
                 if retry_attempts <= 0:
                     raise
