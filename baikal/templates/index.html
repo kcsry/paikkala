@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <div style="display: flex">
-        <div style="flex: 1">
+        <div style="flex: 4">
             <h2>Issued Tickets</h2>
             <table border="1">
                 <thead>
@@ -18,7 +18,7 @@
                     {% for ticket in tickets %}
                         <tr>
                             <td>{{ ticket.program }}</td>
-                            <td>{{ ticket.zone }}</td>
+                            <td>{{ ticket.qualified_zone_name }}</td>
                             <td>{{ ticket.row.name }}</td>
                             <td>{{ ticket.number }}</td>
                             <td>{{ ticket.key }}</td>
@@ -28,7 +28,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="flex: 1">
+        <div style="flex: 3">
             <h2>Programs</h2>
             <ul>
                 {% for program in programs %}

@@ -13,8 +13,16 @@ def get_sibeliustalo_rows():
     return list(read_csv_file(os.path.join(os.path.dirname(__file__), 'sibeliustalo.txt')))
 
 
+def get_sibeliustalo_qualifiers():
+    return list(read_csv_file(os.path.join(os.path.dirname(__file__), 'sibeliustalo-qualifiers.txt')))
+
+
 def import_sibeliustalo_zones():
-    return import_zones(get_sibeliustalo_rows(), default_room_name=SIBELIUSTALO_DEFAULT_ROOM_NAME)
+    return import_zones(
+        row_csv_list=get_sibeliustalo_rows(),
+        qualifier_csv_list=get_sibeliustalo_qualifiers(),
+        default_room_name=SIBELIUSTALO_DEFAULT_ROOM_NAME,
+    )
 
 
 def create_jussi_program(zones, room=None):
