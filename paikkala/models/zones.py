@@ -26,6 +26,9 @@ class Zone(models.Model):
     name = models.CharField(max_length=100)
     capacity = models.IntegerField(editable=False, default=0)
 
+    class Meta:
+        unique_together = (('room', 'name',),)
+
     def __str__(self):
         return '{room} / {name}'.format(room=self.room.name, name=self.name)
 

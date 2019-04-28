@@ -18,6 +18,9 @@ class Row(models.Model):
         help_text='seat numbers to consider not part of the row; comma-separated integers',
     )
 
+    class Meta:
+        unique_together = (('zone', 'name',),)
+
     def clean(self):
         if self.end_number < self.start_number:
             raise ValidationError('end number must be greater than start number')
