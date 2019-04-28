@@ -11,3 +11,6 @@ class SeatQualifier(models.Model):
     start_number = models.IntegerField()
     end_number = models.IntegerField()
     text = models.CharField(max_length=64)
+
+    def __str__(self):
+        return 'Zone %s seats %d..%d qualified "%s"' % (self.zone, self.start_number, self.end_number, self.text)
