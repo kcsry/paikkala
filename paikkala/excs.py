@@ -24,3 +24,7 @@ class Unreservable(RuntimeError):
 
 class UserRequired(ValueError):
     pass
+
+
+class ContactRequired(ValueError):
+    pass

@@ -6,6 +6,7 @@ from django.utils.timezone import now
 
 from paikkala.excs import (
     BatchSizeOverflow,
+    ContactRequired,
     MaxTicketsPerUserReached,
     MaxTicketsReached,
     NoCapacity,
@@ -51,6 +52,15 @@ class Program(models.Model):
     automatic_max_tickets = models.BooleanField(
         default=False,
         help_text='Recompute the maximum tickets field automatically based on row capacity',
+    )
+
+    numbered_seats = models.BooleanField(
+        default=True,
+        help_text='Are seats numbered and should the numbers be shown to the user?',
+    )
+    require_contact = models.BooleanField(
+        default=False,
+        help_text='Require contact information (name, email, phone number) from the user?',
     )
 
     objects = ProgramQuerySet.as_manager()
@@ -123,7 +133,8 @@ class Program(models.Model):
     def remaining_tickets(self):
         return self.max_tickets - self.tickets.count()
 
-    def reserve(self, zone, count, user=None, allow_scatter=False, attempt_sequential=True):
+    def reserve(self, zone, count, user=None, name=None, email=None, phone=None, contact=None, allow_scatter=False,
+                attempt_sequential=True):
         """
         Reserve `count` tickets from the zone `zone`.
 
@@ -147,6 +158,9 @@ class Program(models.Model):
             raise UserRequired('{program} does not allow anonymous ticketing'.format(
                 program=self,
             ))
+
+        if self.require_contact and not (name and email and phone):
+            raise ContactRequired('{program} requires contact information for tickets'.format(program=self))
 
         if count <= 0:  # pragma: no cover
             raise ValueError('Gotta reserve at least one ticket')
@@ -182,7 +196,7 @@ class Program(models.Model):
         new_reservations = []
         reserve_count = count  # Count remaining to reserve
         for row, row_status in sorted(reservation_status.items(), key=lambda pair: pair[1]['remaining']):
-            if row_status['remaining'] >= reserve_count or allow_scatter:
+            if row_status['remaining'] >= reserve_count or allow_scatter or not self.numbered_seats:
                 row_count = min(reserve_count, row_status['remaining'])
                 new_reservations.append((row, row_count))
                 reserve_count -= row_count
@@ -205,6 +219,9 @@ class Program(models.Model):
                 program=self,
                 count=row_count,
                 user=user,
+                name=name,
+                email=email,
+                phone=phone,
                 attempt_sequential=attempt_sequential,
                 excluded_numbers=reservation_status[row]['blocked_set'],
             )

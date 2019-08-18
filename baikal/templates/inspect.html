@@ -23,6 +23,9 @@
             padding: 0;
         }
 
+        small {
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -31,7 +34,11 @@
 </h1>
 <ul>
     {% for ticket in tickets %}
+        {% if show_seats %}
         <li>{{ ticket.qualified_zone }} {{ ticket.number }}</li>
+        {% else %}
+        <li>{{ ticket.qualified_zone }} <small>({{ ticket.key }})</small></li>
+        {% endif %}
     {% endfor %}
 </ul>
 </body>
