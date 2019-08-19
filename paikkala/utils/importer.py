@@ -38,7 +38,7 @@ def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', 
     for r_dict in row_csv_list:
         zone = get_or_create_zone(r_dict)
         row, row_created = zone.rows.get_or_create(
-            name=int(r_dict['row']),
+            name=r_dict['row'],
             defaults=dict(
                 start_number=int(r_dict['start']),
                 end_number=int(r_dict['end']),
