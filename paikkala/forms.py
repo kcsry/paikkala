@@ -5,6 +5,7 @@ from django import forms
 from django.core.validators import MaxValueValidator
 from django.db import IntegrityError
 from django.db.transaction import atomic
+from django.forms import CharField, EmailField, HiddenInput
 
 from paikkala.fields import ReservationZoneChoiceField, ReservationZoneSelect
 from paikkala.models import Program, Zone
@@ -28,6 +29,21 @@ class ReservationForm(forms.ModelForm):
         super(ReservationForm, self).__init__(**kwargs)
         self.mangle_count_field()
         self.mangle_zone_field()
+        if self.instance.require_contact:
+            self.add_contact_fields()
+
+    def add_contact_fields(self):
+        self.fields['attendee_name'] = CharField(
+            label='Name',
+            required=True,
+            initial='{u.first_name} {u.last_name}'.format(u=self.user) if self.user is not None else ''
+        )
+        self.fields['email'] = EmailField(
+            label='Email address',
+            required=True,
+            initial=self.user.email if self.user is not None else ''
+        )
+        self.fields['phone'] = CharField(label='Phone number', required=True)
 
     def mangle_zone_field(self):
         zone_field = self.fields['zone']
@@ -39,12 +55,16 @@ class ReservationForm(forms.ModelForm):
             # ReservationZoneSelect.create_option will process the `z` object here to something sane.
             zone_field.choices = [(z.id, z) for z in zone_field.queryset]
             zone_field.populate_reservation_statuses(program=self.instance)
-            zone_field.widget = ReservationZoneSelect(
-                attrs=None,
-                choices=zone_field.choices,
-                reservation_statuses=zone_field.reservation_statuses,
-                format_label=zone_field.label_from_instance,
-            )
+            if len(zone_field.choices) == 1 and not self.instance.numbered_seats:
+                zone_field.widget = HiddenInput()
+                zone_field.initial = zone_field.choices[0][0]
+            else:
+                zone_field.widget = ReservationZoneSelect(
+                    attrs=None,
+                    choices=zone_field.choices,
+                    reservation_statuses=zone_field.reservation_statuses,
+                    format_label=zone_field.label_from_instance,
+                )
 
     def mangle_count_field(self):
         if self.max_count:
@@ -59,11 +79,14 @@ class ReservationForm(forms.ModelForm):
                     return list(
                         self.instance.reserve(
                             user=self.user,
+                            name=self.cleaned_data.get('attendee_name'),
+                            email=self.cleaned_data.get('email'),
+                            phone=self.cleaned_data.get('phone'),
                             zone=self.cleaned_data['zone'],
                             count=self.cleaned_data['count'],
                         )
                     )
-            except IntegrityError as ie:
+            except IntegrityError as ie:  # pragma: no cover
                 if retry_attempts <= 0:
                     raise
                 retry_attempts -= 1

@@ -50,7 +50,8 @@ class Row(models.Model):
     def get_excluded_set(self):
         return parse_number_set(self.excluded_numbers)
 
-    def reserve(self, program, count, user=None, attempt_sequential=True, excluded_numbers=set()):
+    def reserve(self, program, count, user=None, name=None, email=None, phone=None, attempt_sequential=True,
+                excluded_numbers=set()):
         reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
         unreserved_numbers = [
             number
@@ -75,5 +76,8 @@ class Row(models.Model):
                 row=self,
                 zone=self.zone,
                 user=user,
+                name=name,
+                email=email,
+                phone=phone,
                 number=number,
             )

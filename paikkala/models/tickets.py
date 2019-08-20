@@ -25,6 +25,9 @@ class TicketQuerySet(models.QuerySet):
 
 class Ticket(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, on_delete=models.SET_NULL)
+    name = models.TextField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.TextField(blank=True, null=True)
     program = models.ForeignKey('paikkala.Program', on_delete=models.PROTECT, related_name='tickets')
     ctime = models.DateTimeField(auto_now_add=True)
     zone = models.ForeignKey('paikkala.Zone', on_delete=models.CASCADE, related_name='tickets')

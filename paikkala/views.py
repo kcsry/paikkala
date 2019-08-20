@@ -92,4 +92,5 @@ class InspectionView(DetailView):
             # If the ticket is not user-bound, only show that one.
             context['tickets'] = [ticket]
         context['program_style'] = compute_program_style(ticket.program)
+        context['show_seats'] = ticket.program.numbered_seats
         return context
