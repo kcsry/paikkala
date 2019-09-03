@@ -69,6 +69,7 @@ class ReservationView(MessageTemplateMixin, UpdateView):
 
 class InspectionView(DetailView):
     require_same_user = True
+    require_same_zone = False
     model = Ticket
     queryset = Ticket.objects.select_related('program', 'zone')
 
@@ -87,7 +88,10 @@ class InspectionView(DetailView):
             # Show all of the user's tickets for the program.
             # Use case: the user has reserved a batch of adjacent seats for their friends;
             # they'll be easy to show to the security staff as they're on the same screen.
-            context['tickets'] = self.queryset.filter(user=ticket.user, program=ticket.program).order_by('row', 'number')
+            criteria = dict(user=ticket.user, program=ticket.program)
+            if self.require_same_zone:
+                criteria.update(zone=ticket.zone)
+            context['tickets'] = self.queryset.filter(**criteria).order_by('row', 'number')
         else:
             # If the ticket is not user-bound, only show that one.
             context['tickets'] = [ticket]
