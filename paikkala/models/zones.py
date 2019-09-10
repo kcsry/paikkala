@@ -25,9 +25,11 @@ class Zone(models.Model):
     room = models.ForeignKey('paikkala.Room', on_delete=models.PROTECT)
     name = models.CharField(max_length=100)
     capacity = models.IntegerField(editable=False, default=0)
+    ordering = models.IntegerField(default=0, help_text='Smallest first')
 
     class Meta:
         unique_together = (('room', 'name',),)
+        ordering = ('room', 'ordering', 'name')
 
     def __str__(self):
         return '{room} / {name}'.format(room=self.room.name, name=self.name)

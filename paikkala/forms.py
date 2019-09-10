@@ -47,7 +47,7 @@ class ReservationForm(forms.ModelForm):
 
     def mangle_zone_field(self):
         zone_field = self.fields['zone']
-        zone_field.queryset = self.instance.zones.all().order_by('name')
+        zone_field.queryset = self.instance.zones.all().order_by('ordering', 'name')
 
         if isinstance(zone_field, ReservationZoneChoiceField):
             # This additional magic is required because widgets don't have access to their
