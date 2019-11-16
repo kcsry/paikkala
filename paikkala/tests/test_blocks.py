@@ -1,6 +1,6 @@
 import pytest
 
-from paikkala.excs import NoCapacity, MaxTicketsReached
+from paikkala.excs import MaxTicketsReached, NoCapacity
 from paikkala.models import Program
 
 

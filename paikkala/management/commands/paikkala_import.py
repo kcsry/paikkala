@@ -1,7 +1,7 @@
 from django.core.management import BaseCommand
 from django.db.transaction import atomic
 
-from paikkala.utils.importer import read_csv_file, import_zones
+from paikkala.utils.importer import import_zones, read_csv_file
 
 
 class Command(BaseCommand):

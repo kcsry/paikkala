@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from paikkala.models import Program, Row, Ticket, Zone, Room
+from paikkala.models import Program, Room, Row, Ticket, Zone
 from paikkala.models.blocks import PerProgramBlock
 
 

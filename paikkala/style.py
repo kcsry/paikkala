@@ -3,8 +3,8 @@ import hmac
 import struct
 from colorsys import hsv_to_rgb
 
-from django.utils.encoding import force_bytes
 from django.conf import settings
+from django.utils.encoding import force_bytes
 
 STYLE_SECRET_SAUCE = force_bytes(getattr(settings, 'PAIKKALA_STYLE_SECRET_SAUCE', ''))
 

@@ -4,8 +4,10 @@ from django.forms import HiddenInput
 from django.urls import reverse
 from django.utils.encoding import force_text
 
-from paikkala.excs import BatchSizeOverflow, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable, \
-    UserRequired, ContactRequired
+from paikkala.excs import (
+    BatchSizeOverflow, ContactRequired, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable,
+    UserRequired
+)
 from paikkala.models import Program
 
 

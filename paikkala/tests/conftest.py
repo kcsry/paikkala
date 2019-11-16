@@ -6,8 +6,10 @@ from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
 from paikkala.models import Program, Room, Row, Zone
-from paikkala.tests.demo_data import import_sibeliustalo_zones, create_jussi_program, create_workshop_room, \
-    create_workshop_zone, create_workshop_row, create_workshop_program
+from paikkala.tests.demo_data import (
+    create_jussi_program, create_workshop_program, create_workshop_room, create_workshop_row, create_workshop_zone,
+    import_sibeliustalo_zones
+)
 
 
 @pytest.fixture

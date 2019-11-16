@@ -1,4 +1,4 @@
-from paikkala.models import Zone, Room
+from paikkala.models import Room, Zone
 
 
 def read_csv(infp, separator=','):
