@@ -10,7 +10,7 @@ STYLE_SECRET_SAUCE = force_bytes(getattr(settings, 'PAIKKALA_STYLE_SECRET_SAUCE'
 
 
 def decimal_rgb_to_hex(rgb):
-    return '#%02x%02x%02x' % (
+    return '#{:02x}{:02x}{:02x}'.format(
         int(rgb[0] * 255),
         int(rgb[1] * 255),
         int(rgb[2] * 255),
