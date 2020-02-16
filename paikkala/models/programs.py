@@ -108,7 +108,7 @@ class Program(models.Model):
         :param zone: Optional zone to filter for.
         :return: Generator over (row, numbers) pairs.
         """
-        row_qs = (self.rows.filter(zone=zone) if zone else self.rows.all())
+        row_qs = (self.rows.filter(zone=zone) if zone else self.rows.all()).prefetch_related('zone')
         block_map = self.get_block_map(zone=zone)
         for row in row_qs:
             yield (row, row.get_numbers(additional_excluded_set=block_map.get(row.id, set())))
