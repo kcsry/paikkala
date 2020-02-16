@@ -48,6 +48,8 @@
                         {% endif %}
                         <br>
                         <a href="{% url "reserve" pk=program.pk %}">Reserve...</a>
+                        &mdash;
+                        <a href="{% url "print" pk=program.pk %}">Print...</a>
                     </li>
                 {% endfor %}
             </ul>
