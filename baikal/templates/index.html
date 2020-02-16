@@ -12,17 +12,25 @@
                         <th>Num</th>
                         <th>Key</th>
                         <th>Inspect</th>
+                        <th>Relinquish</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for ticket in tickets %}
                         <tr>
                             <td>{{ ticket.program }}</td>
-                            <td>{{ ticket.qualified_zone_name }}</td>
+                            <td>{{ ticket.qualified_zone }}</td>
                             <td>{{ ticket.row.name }}</td>
                             <td>{{ ticket.number }}</td>
                             <td>{{ ticket.key }}</td>
                             <td><a href="{% url "inspect" pk=ticket.pk key=ticket.key %}">&#x1F440;</a></td>
+                            <td>
+                                <form action="{% url "relinquish" pk=ticket.pk %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="key" value="{{ ticket.key }}">
+                                    <button type="submit">&#128553;</button>
+                                </form>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -33,11 +41,13 @@
             <ul>
                 {% for program in programs %}
                     <li>
-                        <a href="{% url "reserve" pk=program.pk %}">{{ program }}</a>
+                        {{ program }}
                         {% if program.description %}
                             <br>
                             {{ program.description }}
                         {% endif %}
+                        <br>
+                        <a href="{% url "reserve" pk=program.pk %}">Reserve...</a>
                     </li>
                 {% endfor %}
             </ul>
