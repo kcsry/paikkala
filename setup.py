@@ -19,5 +19,8 @@ setup(
             'pytest-django',
             'pytest-cov',
         ],
+        'printing': [
+            'reportlab>=3.0',
+        ],
     },
 )
