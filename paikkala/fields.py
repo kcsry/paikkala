@@ -1,7 +1,10 @@
+from typing import Dict
+
 from django.forms import ModelChoiceField, RadioSelect
 from django.utils.translation import gettext_lazy as _
 
 from paikkala.models import Zone
+from paikkala.models.zones import ZoneReservationStatus
 
 
 class ReservationZoneSelect(RadioSelect):
@@ -24,7 +27,7 @@ class ReservationZoneSelect(RadioSelect):
 
 class ReservationZoneChoiceField(ModelChoiceField):
     widget = RadioSelect()
-    reservation_statuses = {}
+    reservation_statuses: Dict[Zone, ZoneReservationStatus] = {}
     label_format = _('{zone} ({remaining} seats remain)')
 
     def populate_reservation_statuses(self, program):

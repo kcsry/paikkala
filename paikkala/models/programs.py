@@ -103,7 +103,7 @@ class Program(models.Model):
         :param zone: Optional zone to filter for.
         :return: Dict of row ID <-> excluded numbers set
         """
-        blocks_by_row_id = defaultdict(set)
+        blocks_by_row_id: Dict[int, Set[int]] = defaultdict(set)
         qs = self.blocks.filter(row__zone=zone) if zone else self.blocks.all()
         for block in qs:
             blocks_by_row_id[block.row_id] |= block.get_excluded_set()

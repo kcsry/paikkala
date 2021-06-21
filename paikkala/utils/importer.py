@@ -6,11 +6,11 @@ from paikkala.models import Room, Zone
 def read_csv(infp: TextIO, separator: str = ',') -> Iterator[Dict[str, str]]:
     headers = None
     for line in infp:
-        line = line.strip().split(separator)
+        line_list = line.strip().split(separator)
         if not headers:
-            headers = line
+            headers = line_list
             continue
-        yield dict(zip(headers, line))
+        yield dict(zip(headers, line_list))
 
 
 def read_csv_file(filename: str, separator: str = ',') -> Iterator[Dict[str, str]]:
@@ -18,14 +18,16 @@ def read_csv_file(filename: str, separator: str = ',') -> Iterator[Dict[str, str
         yield from read_csv(infp, separator)
 
 
-def import_zones(
+def import_zones(  # noqa: C901
     *,
     row_csv_list: List[Dict[str, str]],
-    qualifier_csv_list: List[Dict[str, str]] = (),
+    qualifier_csv_list: List[Dict[str, str]] = None,
     default_room_name: str = 'Room',
     verbose: bool = False,
 ) -> List[Zone]:
-    rooms_zones = {}
+    rooms_zones: Dict[tuple, Zone] = {}
+    if not qualifier_csv_list:
+        qualifier_csv_list = []
 
     def get_or_create_zone(data):
         room_name = data.get('room', default_room_name)
