@@ -75,10 +75,8 @@ class Ticket(models.Model):
     def qualified_zone(self):
         name = self.zone
         if self.qualifier_texts:
-            name = '{name} {qualifiers}'.format(
-                name=name,
-                qualifiers=' '.join(self.qualifier_texts),
-            )
+            qualifiers = ' '.join(self.qualifier_texts)
+            name = f'{name} {qualifiers}'
         return name
 
     def __str__(self):

@@ -35,6 +35,6 @@ class Command(BaseCommand):
             count = random.randint(1, 5)
             try:
                 tickets = list(program.reserve(zone=zone, count=count, user=user))
-                self.stdout.write('%s: Reserved %d tickets in %s' % (user, len(tickets), zone.name))
+                self.stdout.write(f'{user}: Reserved {len(tickets):d} tickets in {zone.name}')
             except NoCapacity:
                 break

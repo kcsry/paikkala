@@ -157,31 +157,19 @@ class Program(models.Model):
 
         if count > self.max_tickets_per_batch:
             raise BatchSizeOverflow(
-                'Can only reserve {limit} tickets per batch for {program}, {n} attempted'.format(
-                    limit=self.max_tickets_per_batch,
-                    n=count,
-                    program=self,
-                )
+                f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted'
             )
         self.check_reservable()
         reservation_status = zone.get_reservation_status(program=self)
         total_reserved = reservation_status.total_reserved
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached(
-                'Reserving {n} more tickets would overdraw {program}\'s ticket limit {limit}'.format(
-                    n=count,
-                    program=self,
-                    limit=self.max_tickets,
-                )
+                f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}'
             )
         if user and self.tickets.filter(user=user).count() + count > self.max_tickets_per_user:
             raise MaxTicketsPerUserReached(
-                '{user} reserving {n} more tickets would overdraw {program}\'s per-user ticket limit {limit}'.format(
-                    user=user,
-                    n=count,
-                    program=self,
-                    limit=self.max_tickets_per_user,
-                )
+                f'{user} reserving {count} more tickets would overdraw '
+                f'{self}\'s per-user ticket limit {self.max_tickets_per_user}'
             )
         new_reservations = []
         reserve_count = count  # Count remaining to reserve
@@ -193,16 +181,9 @@ class Program(models.Model):
             if reserve_count <= 0:
                 break
         if reserve_count > 0:  # Oops, ran out of rows with tickets left unscattered
-            raise NoCapacity('Could not allocate {remaining} of {n} requested tickets in zone {zone}'.format(
-                remaining=reserve_count,
-                n=count,
-                zone=zone,
-            ))
+            raise NoCapacity(f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone}')
         if not new_reservations:
-            raise NoRowCapacity('No single row in zone {zone} has {n} tickets left (try scatter?)'.format(
-                zone=zone,
-                n=count,
-            ))
+            raise NoRowCapacity(f'No single row in zone {zone} has {count} tickets left (try scatter?)')
 
         for row, row_count in new_reservations:
             yield from row.reserve(

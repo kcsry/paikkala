@@ -36,7 +36,7 @@ class ReservationForm(forms.ModelForm):
         self.fields['attendee_name'] = CharField(
             label='Name',
             required=True,
-            initial='{u.first_name} {u.last_name}'.format(u=self.user) if self.user is not None else ''
+            initial=f'{self.user.first_name} {self.user.last_name}' if self.user is not None else ''
         )
         self.fields['email'] = EmailField(
             label='Email address',
@@ -74,6 +74,8 @@ class ReservationForm(forms.ModelForm):
         assert commit
         retry_attempts = self.integrity_error_retries
         while True:
+            count = self.cleaned_data['count']
+            zone = self.cleaned_data['zone']
             try:
                 with atomic():
                     return list(
@@ -82,8 +84,8 @@ class ReservationForm(forms.ModelForm):
                             name=self.cleaned_data.get('attendee_name'),
                             email=self.cleaned_data.get('email'),
                             phone=self.cleaned_data.get('phone'),
-                            zone=self.cleaned_data['zone'],
-                            count=self.cleaned_data['count'],
+                            zone=zone,
+                            count=count,
                         )
                     )
             except IntegrityError:  # pragma: no cover
@@ -91,13 +93,8 @@ class ReservationForm(forms.ModelForm):
                     raise
                 retry_attempts -= 1
                 log_message = (
-                    'Encountered IntegrityError when reserving {count} '
-                    'seats in zone {zone} for {program}; {n} retries left'
-                ).format(
-                    count=self.cleaned_data['count'],
-                    zone=self.cleaned_data['zone'],
-                    program=self.instance,
-                    n=retry_attempts,
+                    f'Encountered IntegrityError when reserving {count} '
+                    f'seats in zone {zone} for {self.instance}; {retry_attempts} retries left'
                 )
                 log.warning(log_message, exc_info=True)
                 time.sleep(.3)
