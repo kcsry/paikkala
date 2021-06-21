@@ -1,8 +1,8 @@
 from django.forms import ModelChoiceField, RadioSelect
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy as _
 
 from paikkala.models import Zone
+from django.utils.translation import gettext_lazy as _
+from django.utils.encoding import force_str
 
 
 class ReservationZoneSelect(RadioSelect):
@@ -39,7 +39,7 @@ class ReservationZoneChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         if obj in self.reservation_statuses:
             info = self.reservation_statuses[obj]
-            return force_text(self.label_format).format(
+            return force_str(self.label_format).format(
                 zone=obj.name,
                 capacity=info.total_capacity,
                 reserved=info.total_reserved,

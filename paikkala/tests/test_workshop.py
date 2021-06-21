@@ -2,13 +2,13 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.forms import HiddenInput
 from django.urls import reverse
-from django.utils.encoding import force_text
 
 from paikkala.excs import (
     BatchSizeOverflow, ContactRequired, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable,
     UserRequired
 )
 from paikkala.models import Program
+from django.utils.encoding import force_str
 
 
 @pytest.mark.django_db
@@ -38,7 +38,7 @@ def test_with_contact(workshop_program, workshop_zone, workshop_row, user_client
     resp = user_client.get(reverse('inspect', kwargs={'pk': ticket.pk, 'key': ticket.key}))
     assert not resp.context['show_seats']
     for ticket in tickets:
-        assert ticket.key in force_text(resp.render().content)
+        assert ticket.key in force_str(resp.render().content)
 
 
 @pytest.mark.django_db
