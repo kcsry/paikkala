@@ -1,7 +1,9 @@
+from typing import Dict, Iterator, List, TextIO
+
 from paikkala.models import Room, Zone
 
 
-def read_csv(infp, separator=','):
+def read_csv(infp: TextIO, separator: str = ',') -> Iterator[Dict[str, str]]:
     headers = None
     for line in infp:
         line = line.strip().split(separator)
@@ -11,12 +13,18 @@ def read_csv(infp, separator=','):
         yield dict(zip(headers, line))
 
 
-def read_csv_file(filename, separator=','):
+def read_csv_file(filename: str, separator: str = ',') -> Iterator[Dict[str, str]]:
     with open(filename, encoding='utf-8') as infp:
         yield from read_csv(infp, separator)
 
 
-def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', verbose=False):
+def import_zones(
+    *,
+    row_csv_list: List[Dict[str, str]],
+    qualifier_csv_list: List[Dict[str, str]] = (),
+    default_room_name: str = 'Room',
+    verbose: bool = False,
+) -> List[Zone]:
     rooms_zones = {}
 
     def get_or_create_zone(data):

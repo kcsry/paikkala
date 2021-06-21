@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from paikkala.models import Program, Room, Row, Ticket, Zone
-from paikkala.models.blocks import PerProgramBlock
+from paikkala.models import PerProgramBlock, Program, Room, Row, Ticket, Zone
 
 
 class OptimizedRowQueryMixin:
@@ -63,7 +62,7 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
         PerProgramBlockInline,
     ]
 
-    def reserved_tickets(self, instance):
+    def reserved_tickets(self, instance: Program) -> int:
         return instance.tickets.count()
 
     def save_related(self, request, form, formsets, change):

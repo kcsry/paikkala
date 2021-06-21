@@ -1,8 +1,15 @@
+from typing import TYPE_CHECKING, Iterator, List, Optional, Set
+
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
 from paikkala.utils.ranges import parse_number_set, validate_number_set
 from paikkala.utils.runs import find_runs, following_integer
+
+if TYPE_CHECKING:
+    from paikkala.models.programs import Program
+    from paikkala.models.tickets import Ticket
 
 
 class Row(models.Model):
@@ -26,38 +33,38 @@ class Row(models.Model):
             ),
         )
 
-    def clean(self):
+    def clean(self) -> None:
         if self.end_number < self.start_number:
             raise ValidationError('end number must be greater than start number')
         self.capacity = len(self.get_numbers())
 
-    def save(self, **kwargs):
+    def save(self, **kwargs) -> None:
         self.clean()
         super().save(**kwargs)
         self.zone.cache_total_capacity(save=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.zone.room.name} – {self.zone.name} – {self.name}'
 
-    def get_numbers(self, additional_excluded_set=set()):
+    def get_numbers(self, additional_excluded_set: Set[int] = set()) -> List[int]:
         excluded_set = self.get_excluded_set() | additional_excluded_set
         return [number for number in range(self.start_number, self.end_number + 1) if number not in excluded_set]
 
-    def get_excluded_set(self):
+    def get_excluded_set(self) -> Set[int]:
         return parse_number_set(self.excluded_numbers)
 
     def reserve(
         self,
         *,
-        program,
-        count,
-        user=None,
-        name=None,
-        email=None,
-        phone=None,
-        attempt_sequential=True,
-        excluded_numbers=set(),
-    ):
+        program: 'Program',
+        count: int,
+        user: Optional[AbstractBaseUser] = None,
+        name: Optional[str] = None,
+        email: Optional[str] = None,
+        phone: Optional[str] = None,
+        attempt_sequential: bool = True,
+        excluded_numbers: Set[int] = set(),
+    ) -> Iterator['Ticket']:
         reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
         unreserved_numbers = [
             number

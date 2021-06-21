@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import List
 
 from django import forms
 from django.core.validators import MaxValueValidator
@@ -8,7 +9,7 @@ from django.db.transaction import atomic
 from django.forms import CharField, EmailField, HiddenInput
 
 from paikkala.fields import ReservationZoneChoiceField, ReservationZoneSelect
-from paikkala.models import Program, Zone
+from paikkala.models import Program, Ticket, Zone
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class ReservationForm(forms.ModelForm):
         fields = ()
         model = Program
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         self.user = kwargs.pop('user', None)
         super().__init__(**kwargs)
         self.mangle_count_field()
@@ -32,7 +33,7 @@ class ReservationForm(forms.ModelForm):
         if self.instance.require_contact:
             self.add_contact_fields()
 
-    def add_contact_fields(self):
+    def add_contact_fields(self) -> None:
         self.fields['attendee_name'] = CharField(
             label='Name',
             required=True,
@@ -45,7 +46,7 @@ class ReservationForm(forms.ModelForm):
         )
         self.fields['phone'] = CharField(label='Phone number', required=True)
 
-    def mangle_zone_field(self):
+    def mangle_zone_field(self) -> None:
         zone_field = self.fields['zone']
         zone_field.queryset = self.instance.zones.all().order_by('ordering', 'name')
 
@@ -66,11 +67,11 @@ class ReservationForm(forms.ModelForm):
                     format_label=zone_field.label_from_instance,
                 )
 
-    def mangle_count_field(self):
+    def mangle_count_field(self) -> None:
         if self.max_count:
             self.fields['count'].validators.append(MaxValueValidator(self.max_count))
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> List[Ticket]:
         assert commit
         retry_attempts = self.integrity_error_retries
         while True:

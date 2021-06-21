@@ -19,7 +19,7 @@ class Command(BaseCommand):
         parser.add_argument('--yes', '-y', default=False, action='store_true')
 
     @atomic
-    def handle(self, yes, **options):
+    def handle(self, yes: bool, **options) -> None:
         if not yes:
             self.stderr.write('this command requires the --yes parameter, as it will mess up your database')
             return

@@ -1,7 +1,9 @@
+import datetime
 from collections import defaultdict
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Tuple
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now
 
 from paikkala.excs import (
@@ -15,14 +17,19 @@ from paikkala.excs import (
     UserRequired,
 )
 
+if TYPE_CHECKING:
+    from paikkala.models.rows import Row
+    from paikkala.models.tickets import Ticket
+    from paikkala.models.zones import Zone
+
 
 class ProgramQuerySet(models.QuerySet):
-    def reservable(self, at=None):
+    def reservable(self, at: Optional[datetime.datetime] = None) -> 'ProgramQuerySet':
         if not at:
             at = now()
         return self.filter(reservation_start__lte=at, reservation_end__gte=at)
 
-    def valid(self, at=None):
+    def valid(self, at: Optional[datetime.datetime] = None) -> 'ProgramQuerySet':
         if not at:
             at = now()
         return self.filter(Q(invalid_after__isnull=True) | Q(invalid_after__gt=at))
@@ -66,30 +73,30 @@ class Program(models.Model):
 
     objects = ProgramQuerySet.as_manager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.long_name
 
-    def clean(self):
+    def clean(self) -> None:
         if self.automatic_max_tickets and self.id:
             self.max_tickets = self.compute_max_tickets()
 
-    def compute_max_tickets(self):
+    def compute_max_tickets(self) -> int:
         number_map = dict(self.get_rows_and_numbers())
         return sum((len(number_set) for number_set in number_map.values()), 0)
 
     @property
-    def long_name(self):
+    def long_name(self) -> str:
         if self.event_name:
             return f'{self.event_name}: {self.name}'
         return f'{self.name}'
 
     @property
-    def zones(self):
+    def zones(self) -> QuerySet:
         from paikkala.models import Zone
 
         return Zone.objects.filter(rows__in=self.rows.all()).distinct()
 
-    def get_block_map(self, zone=None):
+    def get_block_map(self, zone: Optional['Zone'] = None) -> Dict[int, Set[int]]:
         """
         Get a dict mapping row IDs to a set of blocked Numbers per row.
 
@@ -100,9 +107,9 @@ class Program(models.Model):
         qs = self.blocks.filter(row__zone=zone) if zone else self.blocks.all()
         for block in qs:
             blocks_by_row_id[block.row_id] |= block.get_excluded_set()
-        return blocks_by_row_id
+        return dict(blocks_by_row_id)
 
-    def get_rows_and_numbers(self, zone=None):
+    def get_rows_and_numbers(self, zone: None = None) -> Iterator[Tuple['Row', List[int]]]:
         """
         Iterate over Row objects and Numbers available in them,
         taking into account row blocks and per-program blocks.
@@ -117,19 +124,19 @@ class Program(models.Model):
         for row in row_qs:
             yield (row, row.get_numbers(additional_excluded_set=block_map.get(row.id, set())))
 
-    def is_reservable(self):
+    def is_reservable(self) -> bool:
         if not (self.reservation_start and self.reservation_end):
             return False
         return self.reservation_start <= now() <= self.reservation_end
 
-    def check_reservable(self):
+    def check_reservable(self) -> None:
         if not self.is_reservable():
             raise Unreservable(f'{self} is not reservable at this time')
         if self.remaining_tickets <= 0:
             raise MaxTicketsReached(f'{self} has no remaining tickets.')
 
     @property
-    def remaining_tickets(self):
+    def remaining_tickets(self) -> int:
         return self.max_tickets - self.tickets.count()
 
     def reserve(  # noqa: C901
@@ -143,7 +150,7 @@ class Program(models.Model):
         phone=None,
         allow_scatter=False,
         attempt_sequential=True,
-    ):
+    ) -> Iterator['Ticket']:
         """
         Reserve `count` tickets from the zone `zone`.
 
