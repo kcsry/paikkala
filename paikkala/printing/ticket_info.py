@@ -17,9 +17,7 @@ class TicketInfo(
     def qualified_zone(self):
         name = self.zone
         if self.qualifier_texts:
-            name = "{name} {qualifiers}".format(
-                name=name, qualifiers=" ".join(self.qualifier_texts),
-            )
+            name = f"{name} {' '.join(self.qualifier_texts)}"
         return name
 
 

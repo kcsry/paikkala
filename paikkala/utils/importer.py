@@ -29,9 +29,9 @@ def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', 
             zone, zone_created = Zone.objects.get_or_create(room=room, name=zone_name)
             if verbose:
                 if room_created:
-                    print('Room {} (id {}) created'.format(room, room.id))
+                    print(f'Room {room} (id {room.id}) created')
                 if zone_created:
-                    print('Zone {} (id {}) created'.format(zone, zone.id))
+                    print(f'Zone {zone} (id {zone.id}) created')
             rooms_zones[rz_key] = zone
         return zone
 
@@ -45,7 +45,7 @@ def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', 
             ),
         )
         if verbose and row_created:
-            print('Row {} (id {}) created'.format(row, row.id))
+            print(f'Row {row} (id {row.id}) created')
 
 
         assert row.capacity > 0
@@ -58,6 +58,6 @@ def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', 
             text=q_dict['text'],
         )
         if verbose and qual_created:
-            print('Qualifier {} (id {}) created'.format(qual, qual.id))
+            print(f'Qualifier {qual} (id {qual.id}) created')
 
     return list(rooms_zones.values())

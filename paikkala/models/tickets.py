@@ -82,8 +82,4 @@ class Ticket(models.Model):
         return name
 
     def __str__(self):
-        return '{program} – {qualified_zone} – {number}'.format(
-            program=self.program.name,
-            qualified_zone=self.qualified_zone,
-            number=self.number,
-        )
+        return f'{self.program.name} – {self.qualified_zone} – {self.number}'

@@ -24,7 +24,7 @@ class Command(BaseCommand):
             sibeliustalo_zones = import_sibeliustalo_zones()
         room = sibeliustalo_zones[0].room
         program = (room.program_set.first() or create_jussi_program(sibeliustalo_zones, room=room))
-        user = User.objects.create_user('random-demo-%s' % get_random_string())
+        user = User.objects.create_user(f'random-demo-{get_random_string()}')
         prog_zones = list(program.zones)
         for x in range(10):
             zone = random.choice(prog_zones)

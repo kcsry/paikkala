@@ -26,7 +26,7 @@ class ReservationForm(forms.ModelForm):
 
     def __init__(self, **kwargs):
         self.user = kwargs.pop('user', None)
-        super(ReservationForm, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.mangle_count_field()
         self.mangle_zone_field()
         if self.instance.require_contact:

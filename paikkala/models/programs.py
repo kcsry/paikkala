@@ -74,11 +74,8 @@ class Program(models.Model):
     @property
     def long_name(self):
         if self.event_name:
-            return '{event_name}: {name}'.format(
-                event_name=self.event_name,
-                name=self.name,
-            )
-        return '{name}'.format(name=self.name)
+            return f'{self.event_name}: {self.name}'
+        return f'{self.name}'
 
     @property
     def zones(self):
@@ -120,9 +117,9 @@ class Program(models.Model):
 
     def check_reservable(self):
         if not self.is_reservable():
-            raise Unreservable('{} is not reservable at this time'.format(self))
+            raise Unreservable(f'{self} is not reservable at this time')
         if self.remaining_tickets <= 0:
-            raise MaxTicketsReached('{} has no remaining tickets.'.format(self))
+            raise MaxTicketsReached(f'{self} has no remaining tickets.')
 
     @property
     def remaining_tickets(self):
@@ -150,12 +147,10 @@ class Program(models.Model):
             user = None
 
         if not user and self.require_user:
-            raise UserRequired('{program} does not allow anonymous ticketing'.format(
-                program=self,
-            ))
+            raise UserRequired(f'{self} does not allow anonymous ticketing')
 
         if self.require_contact and not (name and email and phone):
-            raise ContactRequired('{program} requires contact information for tickets'.format(program=self))
+            raise ContactRequired(f'{self} requires contact information for tickets')
 
         if count <= 0:  # pragma: no cover
             raise ValueError('Gotta reserve at least one ticket')
