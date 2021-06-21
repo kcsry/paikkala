@@ -5,8 +5,8 @@ from django.db.models import Q
 from django.utils.timezone import now
 
 from paikkala.excs import (
-    BatchSizeOverflow, ContactRequired, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, NoRowCapacity,
-    Unreservable, UserRequired
+    BatchSizeOverflow, ContactRequired, MaxTicketsPerUserReached, MaxTicketsReached,
+    NoCapacity, NoRowCapacity, Unreservable, UserRequired,
 )
 
 

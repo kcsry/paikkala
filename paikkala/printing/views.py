@@ -1,10 +1,10 @@
 from django.forms import CheckboxSelectMultiple
 from django.http import HttpResponse
-from django.views.generic import FormView, DetailView
+from django.views.generic import DetailView, FormView
 
 from paikkala.models import Program
-from paikkala.printing.configuration import PrintingConfiguration
 from paikkala.printing import generate_ticket_pdf
+from paikkala.printing.configuration import PrintingConfiguration
 from paikkala.printing.drawing import TicketDrawer
 from paikkala.printing.forms import PrintForm
 from paikkala.utils.ranges import parse_number_set

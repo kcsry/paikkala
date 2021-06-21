@@ -1,7 +1,6 @@
 from io import BytesIO
 from itertools import groupby
-from typing import Optional, List, Set
-
+from typing import List, Optional, Set
 
 from paikkala.models import Program, Zone
 from paikkala.printing.configuration import PrintingConfiguration

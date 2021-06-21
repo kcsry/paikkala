@@ -7,7 +7,11 @@ from django.utils.crypto import get_random_string
 
 from paikkala.excs import NoCapacity
 from paikkala.models import Zone
-from paikkala.tests.demo_data import create_jussi_program, import_sibeliustalo_zones, SIBELIUSTALO_DEFAULT_ROOM_NAME
+from paikkala.tests.demo_data import (
+    SIBELIUSTALO_DEFAULT_ROOM_NAME,
+    create_jussi_program,
+    import_sibeliustalo_zones,
+)
 
 
 class Command(BaseCommand):

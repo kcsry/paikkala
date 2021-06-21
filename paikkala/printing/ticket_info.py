@@ -1,7 +1,7 @@
-from collections import namedtuple, defaultdict
+from collections import defaultdict, namedtuple
 from typing import List, Optional, Set
 
-from paikkala.models import Program, Zone, Row, SeatQualifier
+from paikkala.models import Program, Row, SeatQualifier, Zone
 
 
 class TicketInfo(
