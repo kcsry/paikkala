@@ -2,12 +2,11 @@ from django.forms import ModelChoiceField, RadioSelect
 
 from paikkala.models import Zone
 from django.utils.translation import gettext_lazy as _
-from django.utils.encoding import force_str
 
 
 class ReservationZoneSelect(RadioSelect):
 
-    def __init__(self, attrs=None, choices=(), reservation_statuses=None, format_label=force_text):
+    def __init__(self, attrs=None, choices=(), reservation_statuses=None, format_label=str):
         super().__init__(attrs, choices)
         self.reservation_statuses = (reservation_statuses or {})
         self.format_label = format_label
@@ -39,7 +38,7 @@ class ReservationZoneChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         if obj in self.reservation_statuses:
             info = self.reservation_statuses[obj]
-            return force_str(self.label_format).format(
+            return str(self.label_format).format(
                 zone=obj.name,
                 capacity=info.total_capacity,
                 reserved=info.total_reserved,

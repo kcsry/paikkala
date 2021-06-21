@@ -2,7 +2,6 @@ import pytest
 from django.urls import reverse
 
 from paikkala.models import Ticket
-from django.utils.encoding import force_str
 
 
 @pytest.mark.django_db
@@ -32,4 +31,4 @@ def test_inspect(jussi_program, user_client):
     ticket = tickets[0]
     resp = user_client.get(reverse('inspect', kwargs={'pk': ticket.pk, 'key': ticket.key}))
     assert len(resp.context['tickets']) == 6
-    assert jussi_program.name in force_str(resp.render().content)
+    assert jussi_program.name in str(resp.render().content)
