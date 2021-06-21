@@ -132,7 +132,7 @@ class Program(models.Model):
     def remaining_tickets(self):
         return self.max_tickets - self.tickets.count()
 
-    def reserve(
+    def reserve(  # noqa: C901
         self, zone, count, user=None, name=None, email=None, phone=None, allow_scatter=False, attempt_sequential=True
     ):
         """
