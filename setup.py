@@ -15,10 +15,6 @@ setup(
     zip_safe=False,
     install_requires=['Django>=1.8'],
     extras_require={
-        'dev': [
-            'pytest-django',
-            'pytest-cov',
-        ],
         'printing': [
             'reportlab>=3.0',
         ],
