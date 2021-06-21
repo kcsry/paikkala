@@ -14,12 +14,11 @@ class TicketDrawer:
         self.configuration = configuration
 
     def draw_tickets(
-        self, ticket_infos: Iterable[TicketInfo],
+        self,
+        ticket_infos: Iterable[TicketInfo],
     ):
         while ticket_infos:
-            self.canvas.setFont(
-                self.configuration.font_name, self.configuration.font_size
-            )
+            self.canvas.setFont(self.configuration.font_name, self.configuration.font_size)
             for iy in range(self.configuration.n_y):
                 for ix in range(self.configuration.n_x):
                     ticket = next(ticket_infos, None)

@@ -19,9 +19,7 @@ class PrintView(FormView, DetailView):
         form = super().get_form(form_class)
         form.fields["zones"].widget = CheckboxSelectMultiple()
         form.fields["zones"].queryset = self.object.zones.all()
-        form.fields["exclude_reserved_seats"].help_text = (
-            "%d currently reserved" % self.object.tickets.count()
-        )
+        form.fields["exclude_reserved_seats"].help_text = f"{self.object.tickets.count()} currently reserved"
         return form
 
     def post(self, request, *args, **kwargs):
@@ -32,9 +30,7 @@ class PrintView(FormView, DetailView):
         included_numbers = parse_number_set(form.cleaned_data["included_numbers"])
         excluded_numbers = parse_number_set(form.cleaned_data["excluded_numbers"])
         if form.cleaned_data["exclude_reserved_seats"]:
-            excluded_numbers |= set(
-                self.object.tickets.values_list("number", flat=True)
-            )
+            excluded_numbers |= set(self.object.tickets.values_list("number", flat=True))
         pdf_bytes = generate_ticket_pdf(
             drawer_class=self.get_drawer_class(),
             configuration=self.get_ticket_configuration(),
@@ -43,7 +39,10 @@ class PrintView(FormView, DetailView):
             included_numbers=included_numbers,
             excluded_numbers=excluded_numbers,
         )
-        return HttpResponse(content=pdf_bytes, content_type="application/pdf",)
+        return HttpResponse(
+            content=pdf_bytes,
+            content_type="application/pdf",
+        )
 
     def get_ticket_configuration(self):
         return PrintingConfiguration()

@@ -36,7 +36,7 @@ class ReservationForm(forms.ModelForm):
         self.fields['attendee_name'] = CharField(
             label='Name',
             required=True,
-            initial=f'{self.user.first_name} {self.user.last_name}' if self.user is not None else ''
+            initial=f'{self.user.first_name} {self.user.last_name}' if self.user is not None else '',
         )
         self.fields['email'] = EmailField(
             label='Email address',
@@ -97,4 +97,4 @@ class ReservationForm(forms.ModelForm):
                     f'seats in zone {zone} for {self.instance}; {retry_attempts} retries left'
                 )
                 log.warning(log_message, exc_info=True)
-                time.sleep(.3)
+                time.sleep(0.3)

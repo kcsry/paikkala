@@ -28,7 +28,12 @@ class Zone(models.Model):
     ordering = models.IntegerField(default=0, help_text='Smallest first')
 
     class Meta:
-        unique_together = (('room', 'name',),)
+        unique_together = (
+            (
+                'room',
+                'name',
+            ),
+        )
         ordering = ('room', 'ordering', 'name')
 
     def __str__(self):

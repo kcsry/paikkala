@@ -65,11 +65,7 @@ class Ticket(models.Model):
 
     @property
     def qualifier_texts(self):
-        return (
-            self.qualifier_text_cache.splitlines()
-            if self.qualifier_text_cache
-            else []
-        )
+        return self.qualifier_text_cache.splitlines() if self.qualifier_text_cache else []
 
     @property
     def qualified_zone(self):

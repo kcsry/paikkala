@@ -5,7 +5,6 @@ from paikkala.models.blocks import PerProgramBlock
 
 
 class OptimizedRowQueryMixin:
-
     def get_field_queryset(self, db, db_field, request):
         queryset = super().get_field_queryset(db, db_field, request)
         if db_field.name in ('row', 'rows'):

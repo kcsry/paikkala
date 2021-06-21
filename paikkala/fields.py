@@ -5,10 +5,9 @@ from paikkala.models import Zone
 
 
 class ReservationZoneSelect(RadioSelect):
-
     def __init__(self, attrs=None, choices=(), reservation_statuses=None, format_label=str):
         super().__init__(attrs, choices)
-        self.reservation_statuses = (reservation_statuses or {})
+        self.reservation_statuses = reservation_statuses or {}
         self.format_label = format_label
 
     def create_option(self, *args, **kwargs):

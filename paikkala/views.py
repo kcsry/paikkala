@@ -32,10 +32,12 @@ class RelinquishView(MessageTemplateMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         resp = super().delete(request, *args, **kwargs)
-        self.do_success_message({
-            'ticket': self.object,
-            'program': self.object.program,
-        })
+        self.do_success_message(
+            {
+                'ticket': self.object,
+                'program': self.object.program,
+            }
+        )
         return resp
 
 
@@ -52,10 +54,12 @@ class ReservationView(MessageTemplateMixin, UpdateView):
     def form_valid(self, form):
         with transaction.atomic():
             tickets = form.save()
-            self.do_success_message({
-                'n': len(tickets),
-                'program': self.object,
-            })
+            self.do_success_message(
+                {
+                    'n': len(tickets),
+                    'program': self.object,
+                }
+            )
             return HttpResponseRedirect(self.get_success_url())
 
     def get_object(self, queryset=None):

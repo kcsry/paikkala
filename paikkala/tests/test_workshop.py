@@ -19,15 +19,17 @@ def test_missing_contact(workshop_program, workshop_zone, user_client):
 @pytest.mark.django_db
 def test_with_contact(workshop_program, workshop_zone, workshop_row, user_client):
     assert workshop_program.is_reservable()
-    tickets = list(workshop_program.reserve(
-        zone=workshop_zone,
-        count=2,
-        user=user_client.user,
-        name='Nimi',
-        email='user@example.com',
-        phone='0',
-    ))
-    assert(len(tickets) == 2)
+    tickets = list(
+        workshop_program.reserve(
+            zone=workshop_zone,
+            count=2,
+            user=user_client.user,
+            name='Nimi',
+            email='user@example.com',
+            phone='0',
+        )
+    )
+    assert len(tickets) == 2
     ticket = tickets[0]
     resp = user_client.get(reverse('inspect', kwargs={'pk': ticket.pk, 'key': ticket.key}))
     assert not resp.context['show_seats']

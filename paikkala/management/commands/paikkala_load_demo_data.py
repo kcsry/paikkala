@@ -27,7 +27,7 @@ class Command(BaseCommand):
         if not sibeliustalo_zones:
             sibeliustalo_zones = import_sibeliustalo_zones()
         room = sibeliustalo_zones[0].room
-        program = (room.program_set.first() or create_jussi_program(sibeliustalo_zones, room=room))
+        program = room.program_set.first() or create_jussi_program(sibeliustalo_zones, room=room)
         user = User.objects.create_user(f'random-demo-{get_random_string(12)}')
         prog_zones = list(program.zones)
         for x in range(10):

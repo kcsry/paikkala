@@ -13,7 +13,7 @@ class Command(BaseCommand):
     @atomic
     def handle(self, zone_filename, qualifier_filename, default_room_name, **options):
         z_rows = list(read_csv_file(zone_filename))
-        q_rows = (list(read_csv_file(qualifier_filename)) if qualifier_filename else ())
+        q_rows = list(read_csv_file(qualifier_filename)) if qualifier_filename else ()
         for zone in import_zones(
             row_csv_list=z_rows,
             qualifier_csv_list=q_rows,
