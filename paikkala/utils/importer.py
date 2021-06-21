@@ -47,7 +47,6 @@ def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', 
         if verbose and row_created:
             print(f'Row {row} (id {row.id}) created')
 
-
         assert row.capacity > 0
 
     for q_dict in qualifier_csv_list:

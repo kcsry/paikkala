@@ -86,7 +86,7 @@ class ReservationForm(forms.ModelForm):
                             count=self.cleaned_data['count'],
                         )
                     )
-            except IntegrityError as ie:  # pragma: no cover
+            except IntegrityError:  # pragma: no cover
                 if retry_attempts <= 0:
                     raise
                 retry_attempts -= 1

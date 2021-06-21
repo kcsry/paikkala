@@ -13,7 +13,7 @@ def test_workshop_program(workshop_program):
 @pytest.mark.django_db
 def test_missing_contact(workshop_program, workshop_zone, user_client):
     with pytest.raises(ContactRequired):
-        tickets = list(workshop_program.reserve(zone=workshop_zone, count=1, user=user_client.user))
+        list(workshop_program.reserve(zone=workshop_zone, count=1, user=user_client.user))
 
 
 @pytest.mark.django_db
