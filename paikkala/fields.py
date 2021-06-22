@@ -36,11 +36,13 @@ class ReservationZoneChoiceField(ModelChoiceField):
 
     def label_from_instance(self, obj):
         if obj in self.reservation_statuses:
-            info = self.reservation_statuses[obj]
-            return str(self.label_format).format(
-                zone=obj.name,
-                capacity=info.total_capacity,
-                reserved=info.total_reserved,
-                remaining=info.total_remaining,
-            )
+            return self.format_label(obj, self.reservation_statuses[obj])
         return str(obj)
+
+    def format_label(self, zone, info):
+        return str(self.label_format).format(
+            zone=zone.name,
+            capacity=info.total_capacity,
+            reserved=info.total_reserved,
+            remaining=info.total_remaining,
+        )
