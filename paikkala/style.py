@@ -2,14 +2,17 @@ import hashlib
 import hmac
 import struct
 from colorsys import hsv_to_rgb
+from typing import Any, Dict, Tuple, Union
 
 from django.conf import settings
 from django.utils.encoding import force_bytes
 
+from paikkala.models import Program
+
 STYLE_SECRET_SAUCE = force_bytes(getattr(settings, 'PAIKKALA_STYLE_SECRET_SAUCE', ''))
 
 
-def decimal_rgb_to_hex(rgb):
+def decimal_rgb_to_hex(rgb: Tuple[Union[int, float], Union[int, float], Union[int, float]]) -> str:
     return '#{:02x}{:02x}{:02x}'.format(
         int(rgb[0] * 255),
         int(rgb[1] * 255),
@@ -17,7 +20,7 @@ def decimal_rgb_to_hex(rgb):
     )
 
 
-def compute_program_style(program):
+def compute_program_style(program: Program) -> Dict[str, Any]:
     noise = hmac.HMAC(key=STYLE_SECRET_SAUCE, msg=force_bytes(program.name), digestmod=hashlib.sha256).digest()
     random_values = [v / (2 << 31) for v in struct.unpack('<IIIIIIII', noise)]
     hue1 = random_values[0]
@@ -29,6 +32,7 @@ def compute_program_style(program):
     color1 = hsv_to_rgb(hue1, sat1, val1)
     color2 = hsv_to_rgb(hue2, sat2, val2)
     accent_color = hsv_to_rgb(hue2, 1, min(1, val2 * 1.5))
+    # TODO: de-dict this type
     return {
         'accent_color': decimal_rgb_to_hex(accent_color),
         'angle': random_values[5] * 360,

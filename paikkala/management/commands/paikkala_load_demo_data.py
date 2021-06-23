@@ -1,4 +1,6 @@
 import random
+from argparse import ArgumentParser
+from typing import Any
 
 from django.contrib.auth.models import User
 from django.core.management import BaseCommand
@@ -15,11 +17,11 @@ from paikkala.tests.demo_data import (
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
+    def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument('--yes', '-y', default=False, action='store_true')
 
     @atomic
-    def handle(self, yes, **options):
+    def handle(self, yes: bool, **options: Any) -> None:
         if not yes:
             self.stderr.write('this command requires the --yes parameter, as it will mess up your database')
             return
@@ -30,7 +32,7 @@ class Command(BaseCommand):
         program = room.program_set.first() or create_jussi_program(sibeliustalo_zones, room=room)
         user = User.objects.create_user(f'random-demo-{get_random_string(12)}')
         prog_zones = list(program.zones)
-        for x in range(10):
+        for _ in range(10):
             zone = random.choice(prog_zones)
             count = random.randint(1, 5)
             try:

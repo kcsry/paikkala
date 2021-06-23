@@ -1,25 +1,35 @@
+from typing import Dict, Iterator, List, TextIO
+
 from paikkala.models import Room, Zone
 
 
-def read_csv(infp, separator=','):
+def read_csv(infp: TextIO, separator: str = ',') -> Iterator[Dict[str, str]]:
     headers = None
     for line in infp:
-        line = line.strip().split(separator)
+        line_list = line.strip().split(separator)
         if not headers:
-            headers = line
+            headers = line_list
             continue
-        yield dict(zip(headers, line))
+        yield dict(zip(headers, line_list))
 
 
-def read_csv_file(filename, separator=','):
+def read_csv_file(filename: str, separator: str = ',') -> Iterator[Dict[str, str]]:
     with open(filename, encoding='utf-8') as infp:
         yield from read_csv(infp, separator)
 
 
-def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', verbose=False):
-    rooms_zones = {}
+def import_zones(  # noqa: C901
+    *,
+    row_csv_list: List[Dict[str, str]],
+    qualifier_csv_list: List[Dict[str, str]] = None,
+    default_room_name: str = 'Room',
+    verbose: bool = False,
+) -> List[Zone]:
+    rooms_zones: Dict[tuple, Zone] = {}
+    if not qualifier_csv_list:
+        qualifier_csv_list = []
 
-    def get_or_create_zone(data):
+    def get_or_create_zone(data: dict) -> Zone:
         room_name = data.get('room', default_room_name)
         zone_name = data['zone']
         rz_key = (room_name, zone_name)
@@ -27,6 +37,7 @@ def import_zones(row_csv_list, qualifier_csv_list=(), default_room_name='Room', 
         if not zone:
             room, room_created = Room.objects.get_or_create(name=room_name)
             zone, zone_created = Zone.objects.get_or_create(room=room, name=zone_name)
+            assert room and zone
             if verbose:
                 if room_created:
                     print(f'Room {room} (id {room.id}) created')

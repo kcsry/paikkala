@@ -1,22 +1,21 @@
-import typing
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterator, Tuple
 
 from .configuration import PrintingConfiguration, cm
 from .ticket_info import TicketInfo
 
-if getattr(typing, "TYPE_CHECKING", False):
+if TYPE_CHECKING:
     from reportlab.pdfgen.canvas import Canvas
 
 
 class TicketDrawer:
-    def __init__(self, canvas: "Canvas", configuration: PrintingConfiguration):
+    def __init__(self, canvas: "Canvas", configuration: PrintingConfiguration) -> None:
         self.canvas = canvas
         self.configuration = configuration
 
     def draw_tickets(
         self,
-        ticket_infos: Iterable[TicketInfo],
-    ):
+        ticket_infos: Iterator[TicketInfo],
+    ) -> None:
         while ticket_infos:
             self.canvas.setFont(self.configuration.font_name, self.configuration.font_size)
             for iy in range(self.configuration.n_y):
@@ -31,7 +30,7 @@ class TicketDrawer:
                     self.canvas.restoreState()
             self.canvas.showPage()
 
-    def get_ticket_coords(self, ix, iy):
+    def get_ticket_coords(self, ix: int, iy: int) -> Tuple[float, float]:
         ticket_margin = self.configuration.ticket_margin
         page_margin = self.configuration.page_margin
 
@@ -44,7 +43,7 @@ class TicketDrawer:
         page_x = page_margin + page_x
         return page_x, page_y
 
-    def draw_single_ticket(self, ticket: TicketInfo):
+    def draw_single_ticket(self, ticket: TicketInfo) -> None:
         """
         Draw a single ticket. `self.canvas` has already been translated correctly.
         """

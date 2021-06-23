@@ -1,3 +1,5 @@
+from typing import Set
+
 from django.db import models
 
 from paikkala.utils.ranges import parse_number_set, validate_number_set
@@ -13,5 +15,5 @@ class PerProgramBlock(models.Model):
         help_text='seat numbers to block from this row in this program',
     )
 
-    def get_excluded_set(self):
+    def get_excluded_set(self) -> Set[int]:
         return parse_number_set(self.excluded_numbers)

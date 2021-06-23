@@ -1,5 +1,5 @@
 from collections import defaultdict, namedtuple
-from typing import List, Optional, Set
+from typing import Iterator, List, Optional, Set
 
 from paikkala.models import Program, Row, SeatQualifier, Zone
 
@@ -14,8 +14,8 @@ class TicketInfo(
     qualifier_texts: List[str]
 
     @property
-    def qualified_zone(self):
-        name = self.zone
+    def qualified_zone(self) -> str:
+        name = str(self.zone)
         if self.qualifier_texts:
             name = f"{name} {' '.join(self.qualifier_texts)}"
         return name
@@ -27,7 +27,7 @@ def generate_ticket_infos(
     zone_ids: Optional[Set[int]],
     included_numbers: Optional[Set[int]],
     excluded_numbers: Optional[Set[int]],
-):
+) -> Iterator[TicketInfo]:
     # TODO: this all could use smarter queries, maybe
 
     seat_qualifiers_by_zone_id = defaultdict(list)

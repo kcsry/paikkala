@@ -1,4 +1,6 @@
+import datetime
 import random
+from typing import Any, List, Optional
 
 from django.conf import settings
 from django.db import models
@@ -6,7 +8,7 @@ from django.db.models import Q
 from django.utils.timezone import now
 
 
-def generate_key():
+def generate_key() -> str:
     key = ''
     while len(key) < 8:
         char = random.choice('aaaiiioooeeecdfghjklmqrtuv')
@@ -17,7 +19,7 @@ def generate_key():
 
 
 class TicketQuerySet(models.QuerySet):
-    def valid(self, at=None):
+    def valid(self, at: Optional[datetime.datetime] = None) -> models.QuerySet:
         if not at:
             at = now()
         return self.filter(Q(program__invalid_after__isnull=True) | Q(program__invalid_after__gt=at))
@@ -42,21 +44,21 @@ class Ticket(models.Model):
             ('program', 'zone', 'number'),
         ]
 
-    def is_valid(self, at=None):
+    def is_valid(self, at: Optional[datetime.datetime] = None) -> bool:
         if not at:
             at = now()
         if self.program.invalid_after and at > self.program.invalid_after:
             return False
         return True
 
-    def save(self, **kwargs):
+    def save(self, **kwargs: Any) -> None:
         if not self.key:
             self.key = generate_key()
         if not self.pk:
             self.recompute_qualifiers()
         return super().save(**kwargs)
 
-    def recompute_qualifiers(self):
+    def recompute_qualifiers(self) -> None:
         self.qualifier_text_cache = '\n'.join([
             q.text
             for q
@@ -64,16 +66,16 @@ class Ticket(models.Model):
         ])
 
     @property
-    def qualifier_texts(self):
+    def qualifier_texts(self) -> List[str]:
         return self.qualifier_text_cache.splitlines() if self.qualifier_text_cache else []
 
     @property
-    def qualified_zone(self):
-        name = self.zone
+    def qualified_zone(self) -> str:
+        name = str(self.zone)
         if self.qualifier_texts:
             qualifiers = ' '.join(self.qualifier_texts)
             name = f'{name} {qualifiers}'
         return name
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.program.name} – {self.qualified_zone} – {self.number}'

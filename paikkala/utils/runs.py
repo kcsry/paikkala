@@ -1,8 +1,14 @@
-def following_integer(current_run, new_value):
+from typing import Callable, Iterable, List, TypeVar
+
+
+def following_integer(current_run: List[int], new_value: int) -> bool:
     return new_value == current_run[-1] + 1
 
 
-def find_runs(iterable, predicate):
+T = TypeVar('T')
+
+
+def find_runs(iterable: Iterable[T], predicate: Callable[[List[T], T], bool]) -> List[List[T]]:
     """
     Find "runs" in the iterable by grouping them with the given predicate.
 
@@ -12,7 +18,7 @@ def find_runs(iterable, predicate):
                       value belongs in the run, and false otherwise.
     :return: The input, grouped into runs.
     """
-    runs = []
+    runs: List[List[T]] = []
     run = None
     for value in iterable:
         if run is not None and predicate(run, value):

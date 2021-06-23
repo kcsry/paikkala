@@ -12,17 +12,17 @@ from paikkala.style import compute_program_style
 class MessageTemplateMixin:
     success_message_template = None
 
-    def do_success_message(self, env):
+    def do_success_message(self, env: dict) -> None:
         if self.success_message_template:
             messages.success(self.request, self.success_message_template.format_map(env))
 
 
 class RelinquishView(MessageTemplateMixin, DeleteView):
-    require_same_user = True
+    require_same_user: bool = True
     model = Ticket
     success_url = '/'
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset=None) -> Ticket:
         ticket = super().get_object(queryset)
         if ticket.key != self.request.POST.get('key'):
             raise ValueError('Invalid ticket key')
@@ -46,12 +46,12 @@ class ReservationView(MessageTemplateMixin, UpdateView):
     form_class = ReservationForm
     success_url = '/'
 
-    def get_form_kwargs(self):
+    def get_form_kwargs(self) -> dict:
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
-    def form_valid(self, form):
+    def form_valid(self, form: ReservationForm) -> HttpResponseRedirect:
         with transaction.atomic():
             tickets = form.save()
             self.do_success_message(
@@ -62,22 +62,22 @@ class ReservationView(MessageTemplateMixin, UpdateView):
             )
             return HttpResponseRedirect(self.get_success_url())
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset=None) -> Program:
         program = super().get_object(queryset)
         self.precheck_reservable(program)
         return program
 
-    def precheck_reservable(self, program):
+    def precheck_reservable(self, program: Program) -> None:
         program.check_reservable()
 
 
 class InspectionView(DetailView):
-    require_same_user = True
-    require_same_zone = False
+    require_same_user: bool = True
+    require_same_zone: bool = False
     model = Ticket
     queryset = Ticket.objects.select_related('program', 'zone')
 
-    def get_object(self, queryset=None):
+    def get_object(self, queryset=None) -> Ticket:
         ticket = super().get_object(queryset)
         if ticket.key != self.kwargs.get('key'):
             raise PermissionDenied('Invalid ticket key')
@@ -85,7 +85,7 @@ class InspectionView(DetailView):
             raise PermissionDenied('This ticket is not yours')
         return ticket
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
         context = super().get_context_data(**kwargs)
         ticket = context['ticket']
         if ticket.user_id:

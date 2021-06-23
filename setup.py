@@ -10,7 +10,7 @@ setup(
     author_email='akx@desucon.fi',
     url='https://github.com/kcsry/paikkala',
     packages=find_packages(exclude=['baikal', 'paikkala.tests']),
-    package_data={'paikkala': ['static/paikkala/*']},
+    package_data={'paikkala': ['static/paikkala/*', 'py.typed']},
     include_package_data=True,
     zip_safe=False,
     install_requires=['Django>=3.0'],
