@@ -198,9 +198,9 @@ class Program(models.Model):
             )
         new_reservations = []
         reserve_count = count  # Count remaining to reserve
-        for row, row_status in sorted(reservation_status.items(), key=lambda pair: pair[1]['remaining']):
-            if row_status['remaining'] >= reserve_count or allow_scatter or not self.numbered_seats:
-                row_count = min(reserve_count, row_status['remaining'])
+        for row, row_status in sorted(reservation_status.items(), key=lambda pair: pair[1].remaining):
+            if row_status.remaining >= reserve_count or allow_scatter or not self.numbered_seats:
+                row_count = min(reserve_count, row_status.remaining)
                 new_reservations.append((row, row_count))
                 reserve_count -= row_count
             if reserve_count <= 0:
@@ -219,5 +219,5 @@ class Program(models.Model):
                 email=email,
                 phone=phone,
                 attempt_sequential=attempt_sequential,
-                excluded_numbers=reservation_status[row]['blocked_set'],
+                excluded_numbers=reservation_status[row].blocked_set,
             )

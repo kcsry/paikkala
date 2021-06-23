@@ -31,7 +31,7 @@ def test_reserve_non_scatter(jussi_program):
     tickets = list(jussi_program.reserve(zone=zone, count=5))
     row = tickets[0].row
     rstat = zone.get_reservation_status(program=jussi_program)
-    assert rstat[row]['reserved'] == 5
+    assert rstat[row].reserved == 5
 
 
 @pytest.mark.django_db
@@ -52,9 +52,9 @@ def test_reserve_scatter(jussi_program):
     tickets = list(jussi_program.reserve(zone=zone, count=n_to_reserve, allow_scatter=True))
     assert len(tickets) == n_to_reserve
     rstat = zone.get_reservation_status(program=jussi_program)
-    assert sum(r['reserved'] for r in rstat.values()) == n_to_reserve  # Reservations line up
-    assert sum(r['remaining'] for r in rstat.values()) == zone.capacity - n_to_reserve  # Free slots line up
-    assert any(r['reserved'] and r['capacity'] for r in rstat.values())  # Check that we have semi-reserved rows
+    assert sum(r.reserved for r in rstat.values()) == n_to_reserve  # Reservations line up
+    assert sum(r.remaining for r in rstat.values()) == zone.capacity - n_to_reserve  # Free slots line up
+    assert any(r.reserved and r.capacity for r in rstat.values())  # Check that we have semi-reserved rows
 
 
 @pytest.mark.django_db
