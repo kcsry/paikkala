@@ -1,11 +1,17 @@
 from io import BytesIO
 from itertools import groupby
-from typing import Optional, List, Set
-
+from typing import List, Optional, Set
 
 from paikkala.models import Program, Zone
 from paikkala.printing.configuration import PrintingConfiguration
 from paikkala.printing.ticket_info import TicketInfo, generate_ticket_infos
+
+__all__ = [
+    'PrintingConfiguration',
+    'TicketInfo',
+    'generate_ticket_infos',
+    'generate_ticket_pdf',
+]
 
 
 def generate_ticket_pdf(
@@ -23,7 +29,7 @@ def generate_ticket_pdf(
     canvas = Canvas(output_bio)
     ticket_infos = generate_ticket_infos(
         program=program,
-        zone_ids=(set(z.id for z in zones) if zones is not None else None),
+        zone_ids=({z.id for z in zones} if zones is not None else None),
         included_numbers=included_numbers,
         excluded_numbers=excluded_numbers,
     )

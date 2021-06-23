@@ -11,10 +11,10 @@ def test_program_creation(admin_client, sibeliustalo_zones, automatic_max_ticket
     zone = next(z for z in sibeliustalo_zones if z.name == 'Permanto')
     row_ids = zone.rows.values_list('id', flat=True)
     room = sibeliustalo_zones[0].room
-    name = get_random_string()
+    name = get_random_string(12)
     add_url = reverse('admin:paikkala_program_add')
     admin_client.get(add_url)
-    resp = admin_client.post(add_url, {
+    payload = {
         'event_name': 'dässgön',
         'name': name,
         'room': room.id,
@@ -27,7 +27,12 @@ def test_program_creation(admin_client, sibeliustalo_zones, automatic_max_ticket
         'blocks-MIN_NUM_FORMS': 0,
         'blocks-MAX_NUM_FORMS': 1000,
         'automatic_max_tickets': ('yaasss' if automatic_max_tickets else ''),
-    }, follow=True)
+    }
+    resp = admin_client.post(
+        add_url,
+        payload,
+        follow=True,
+    )
     assert resp.status_code == 200
     prog = Program.objects.get(name=name)
     if automatic_max_tickets:

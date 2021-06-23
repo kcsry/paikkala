@@ -7,8 +7,12 @@ from django.utils.timezone import now
 
 from paikkala.models import Program, Room, Row, Zone
 from paikkala.tests.demo_data import (
-    create_jussi_program, create_workshop_program, create_workshop_room, create_workshop_row, create_workshop_zone,
-    import_sibeliustalo_zones
+    create_jussi_program,
+    create_workshop_program,
+    create_workshop_room,
+    create_workshop_row,
+    create_workshop_zone,
+    import_sibeliustalo_zones,
 )
 
 
@@ -70,4 +74,4 @@ def user_client(random_user):
 
 @pytest.fixture
 def random_user(django_user_model):
-    return django_user_model.objects.create_user(username=get_random_string())
+    return django_user_model.objects.create_user(username=get_random_string(12))

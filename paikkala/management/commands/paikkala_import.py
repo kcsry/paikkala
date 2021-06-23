@@ -13,18 +13,14 @@ class Command(BaseCommand):
     @atomic
     def handle(self, zone_filename, qualifier_filename, default_room_name, **options):
         z_rows = list(read_csv_file(zone_filename))
-        q_rows = (list(read_csv_file(qualifier_filename)) if qualifier_filename else ())
+        q_rows = list(read_csv_file(qualifier_filename)) if qualifier_filename else ()
         for zone in import_zones(
             row_csv_list=z_rows,
             qualifier_csv_list=q_rows,
             default_room_name=default_room_name,
             verbose=True,
         ):
+            rows_str = ', '.join(name for name in zone.rows.values_list('name', flat=True))
             self.stdout.write(
-                '%s: capacity %d, rows %s, %d qualifiers' % (
-                    zone,
-                    zone.capacity,
-                    ', '.join(name for name in zone.rows.values_list('name', flat=True)),
-                    zone.seat_qualifiers.count(),
-                )
+                f'{zone}: capacity {zone.capacity}, rows {rows_str}, {zone.seat_qualifiers.count()} qualifiers'
             )

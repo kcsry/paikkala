@@ -5,8 +5,14 @@ from django.db.models import Q
 from django.utils.timezone import now
 
 from paikkala.excs import (
-    BatchSizeOverflow, ContactRequired, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, NoRowCapacity,
-    Unreservable, UserRequired
+    BatchSizeOverflow,
+    ContactRequired,
+    MaxTicketsPerUserReached,
+    MaxTicketsReached,
+    NoCapacity,
+    NoRowCapacity,
+    Unreservable,
+    UserRequired,
 )
 
 
@@ -74,15 +80,13 @@ class Program(models.Model):
     @property
     def long_name(self):
         if self.event_name:
-            return '{event_name}: {name}'.format(
-                event_name=self.event_name,
-                name=self.name,
-            )
-        return '{name}'.format(name=self.name)
+            return f'{self.event_name}: {self.name}'
+        return f'{self.name}'
 
     @property
     def zones(self):
         from paikkala.models import Zone
+
         return Zone.objects.filter(rows__in=self.rows.all()).distinct()
 
     def get_block_map(self, zone=None):
@@ -93,7 +97,7 @@ class Program(models.Model):
         :return: Dict of row ID <-> excluded numbers set
         """
         blocks_by_row_id = defaultdict(set)
-        qs = (self.blocks.filter(row__zone=zone) if zone else self.blocks.all())
+        qs = self.blocks.filter(row__zone=zone) if zone else self.blocks.all()
         for block in qs:
             blocks_by_row_id[block.row_id] |= block.get_excluded_set()
         return blocks_by_row_id
@@ -116,20 +120,30 @@ class Program(models.Model):
     def is_reservable(self):
         if not (self.reservation_start and self.reservation_end):
             return False
-        return (self.reservation_start <= now() <= self.reservation_end)
+        return self.reservation_start <= now() <= self.reservation_end
 
     def check_reservable(self):
         if not self.is_reservable():
-            raise Unreservable('{} is not reservable at this time'.format(self))
+            raise Unreservable(f'{self} is not reservable at this time')
         if self.remaining_tickets <= 0:
-            raise MaxTicketsReached('{} has no remaining tickets.'.format(self))
+            raise MaxTicketsReached(f'{self} has no remaining tickets.')
 
     @property
     def remaining_tickets(self):
         return self.max_tickets - self.tickets.count()
 
-    def reserve(self, zone, count, user=None, name=None, email=None, phone=None, contact=None, allow_scatter=False,
-                attempt_sequential=True):
+    def reserve(  # noqa: C901
+        self,
+        *,
+        zone,
+        count,
+        user=None,
+        name=None,
+        email=None,
+        phone=None,
+        allow_scatter=False,
+        attempt_sequential=True,
+    ):
         """
         Reserve `count` tickets from the zone `zone`.
 
@@ -150,43 +164,29 @@ class Program(models.Model):
             user = None
 
         if not user and self.require_user:
-            raise UserRequired('{program} does not allow anonymous ticketing'.format(
-                program=self,
-            ))
+            raise UserRequired(f'{self} does not allow anonymous ticketing')
 
         if self.require_contact and not (name and email and phone):
-            raise ContactRequired('{program} requires contact information for tickets'.format(program=self))
+            raise ContactRequired(f'{self} requires contact information for tickets')
 
         if count <= 0:  # pragma: no cover
             raise ValueError('Gotta reserve at least one ticket')
 
         if count > self.max_tickets_per_batch:
             raise BatchSizeOverflow(
-                'Can only reserve {limit} tickets per batch for {program}, {n} attempted'.format(
-                    limit=self.max_tickets_per_batch,
-                    n=count,
-                    program=self,
-                )
+                f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted'
             )
         self.check_reservable()
         reservation_status = zone.get_reservation_status(program=self)
         total_reserved = reservation_status.total_reserved
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached(
-                'Reserving {n} more tickets would overdraw {program}\'s ticket limit {limit}'.format(
-                    n=count,
-                    program=self,
-                    limit=self.max_tickets,
-                )
+                f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}'
             )
         if user and self.tickets.filter(user=user).count() + count > self.max_tickets_per_user:
             raise MaxTicketsPerUserReached(
-                '{user} reserving {n} more tickets would overdraw {program}\'s per-user ticket limit {limit}'.format(
-                    user=user,
-                    n=count,
-                    program=self,
-                    limit=self.max_tickets_per_user,
-                )
+                f'{user} reserving {count} more tickets would overdraw '
+                f'{self}\'s per-user ticket limit {self.max_tickets_per_user}'
             )
         new_reservations = []
         reserve_count = count  # Count remaining to reserve
@@ -198,16 +198,9 @@ class Program(models.Model):
             if reserve_count <= 0:
                 break
         if reserve_count > 0:  # Oops, ran out of rows with tickets left unscattered
-            raise NoCapacity('Could not allocate {remaining} of {n} requested tickets in zone {zone}'.format(
-                remaining=reserve_count,
-                n=count,
-                zone=zone,
-            ))
+            raise NoCapacity(f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone}')
         if not new_reservations:
-            raise NoRowCapacity('No single row in zone {zone} has {n} tickets left (try scatter?)'.format(
-                zone=zone,
-                n=count,
-            ))
+            raise NoRowCapacity(f'No single row in zone {zone} has {count} tickets left (try scatter?)')
 
         for row, row_count in new_reservations:
             yield from row.reserve(

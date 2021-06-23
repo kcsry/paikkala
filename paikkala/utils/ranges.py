@@ -37,7 +37,7 @@ def parse_number_set(number_set):
         else:
             dest = incl
         if '-' in atom[1:] or '..' in atom:
-            start, end = [int(v) for v in atom.split(('..' if '..' in atom else '-'), 1)]
+            start, end = (int(v) for v in atom.split(('..' if '..' in atom else '-'), 1))
             if start > end:
                 end, start = start, end
             dest.update(set(range(start, end + 1)))
@@ -50,4 +50,4 @@ def validate_number_set(number_set):
     try:
         return parse_number_set(number_set)
     except Exception as exc:
-        raise ValidationError('number set: %s' % exc) from exc
+        raise ValidationError(f'number set: {exc}') from exc

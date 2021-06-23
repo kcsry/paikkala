@@ -7,7 +7,11 @@ from django.utils.crypto import get_random_string
 
 from paikkala.excs import NoCapacity
 from paikkala.models import Zone
-from paikkala.tests.demo_data import create_jussi_program, import_sibeliustalo_zones, SIBELIUSTALO_DEFAULT_ROOM_NAME
+from paikkala.tests.demo_data import (
+    SIBELIUSTALO_DEFAULT_ROOM_NAME,
+    create_jussi_program,
+    import_sibeliustalo_zones,
+)
 
 
 class Command(BaseCommand):
@@ -23,14 +27,14 @@ class Command(BaseCommand):
         if not sibeliustalo_zones:
             sibeliustalo_zones = import_sibeliustalo_zones()
         room = sibeliustalo_zones[0].room
-        program = (room.program_set.first() or create_jussi_program(sibeliustalo_zones, room=room))
-        user = User.objects.create_user('random-demo-%s' % get_random_string())
+        program = room.program_set.first() or create_jussi_program(sibeliustalo_zones, room=room)
+        user = User.objects.create_user(f'random-demo-{get_random_string(12)}')
         prog_zones = list(program.zones)
         for x in range(10):
             zone = random.choice(prog_zones)
             count = random.randint(1, 5)
             try:
                 tickets = list(program.reserve(zone=zone, count=count, user=user))
-                self.stdout.write('%s: Reserved %d tickets in %s' % (user, len(tickets), zone.name))
+                self.stdout.write(f'{user}: Reserved {len(tickets):d} tickets in {zone.name}')
             except NoCapacity:
                 break

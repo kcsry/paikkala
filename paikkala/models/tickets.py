@@ -65,25 +65,15 @@ class Ticket(models.Model):
 
     @property
     def qualifier_texts(self):
-        return (
-            self.qualifier_text_cache.splitlines()
-            if self.qualifier_text_cache
-            else []
-        )
+        return self.qualifier_text_cache.splitlines() if self.qualifier_text_cache else []
 
     @property
     def qualified_zone(self):
         name = self.zone
         if self.qualifier_texts:
-            name = '{name} {qualifiers}'.format(
-                name=name,
-                qualifiers=' '.join(self.qualifier_texts),
-            )
+            qualifiers = ' '.join(self.qualifier_texts)
+            name = f'{name} {qualifiers}'
         return name
 
     def __str__(self):
-        return '{program} – {qualified_zone} – {number}'.format(
-            program=self.program.name,
-            qualified_zone=self.qualified_zone,
-            number=self.number,
-        )
+        return f'{self.program.name} – {self.qualified_zone} – {self.number}'

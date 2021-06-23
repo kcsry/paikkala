@@ -2,7 +2,12 @@ import pytest
 from django.contrib.auth.models import AnonymousUser
 
 from paikkala.excs import (
-    BatchSizeOverflow, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable, UserRequired
+    BatchSizeOverflow,
+    MaxTicketsPerUserReached,
+    MaxTicketsReached,
+    NoCapacity,
+    Unreservable,
+    UserRequired,
 )
 from paikkala.models import Program
 

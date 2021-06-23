@@ -4,7 +4,7 @@ from django.db.models import Count, Sum
 
 class ZoneReservationStatus(dict):
     def __init__(self, zone, program, data):
-        super(ZoneReservationStatus, self).__init__(data)
+        super().__init__(data)
         self.program = program
         self.zone = zone
 
@@ -28,11 +28,16 @@ class Zone(models.Model):
     ordering = models.IntegerField(default=0, help_text='Smallest first')
 
     class Meta:
-        unique_together = (('room', 'name',),)
+        unique_together = (
+            (
+                'room',
+                'name',
+            ),
+        )
         ordering = ('room', 'ordering', 'name')
 
     def __str__(self):
-        return '{room} / {name}'.format(room=self.room.name, name=self.name)
+        return f'{self.room.name} / {self.name}'
 
     def cache_total_capacity(self, save=False):
         self.capacity = self.rows.aggregate(capacity=Sum('capacity')).get('capacity', 0)

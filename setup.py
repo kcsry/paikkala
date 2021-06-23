@@ -13,12 +13,9 @@ setup(
     package_data={'paikkala': ['static/paikkala/*']},
     include_package_data=True,
     zip_safe=False,
-    install_requires=['Django>=1.8'],
+    install_requires=['Django>=3.0'],
+    python_requires='>=3.6',
     extras_require={
-        'dev': [
-            'pytest-django',
-            'pytest-cov',
-        ],
         'printing': [
             'reportlab>=3.0',
         ],

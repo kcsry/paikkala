@@ -1,14 +1,8 @@
 import pytest
-from django.contrib.auth.models import AnonymousUser
 from django.forms import HiddenInput
 from django.urls import reverse
-from django.utils.encoding import force_text
 
-from paikkala.excs import (
-    BatchSizeOverflow, ContactRequired, MaxTicketsPerUserReached, MaxTicketsReached, NoCapacity, Unreservable,
-    UserRequired
-)
-from paikkala.models import Program
+from paikkala.excs import ContactRequired
 
 
 @pytest.mark.django_db
@@ -19,26 +13,28 @@ def test_workshop_program(workshop_program):
 @pytest.mark.django_db
 def test_missing_contact(workshop_program, workshop_zone, user_client):
     with pytest.raises(ContactRequired):
-        tickets = list(workshop_program.reserve(zone=workshop_zone, count=1, user=user_client.user))
+        list(workshop_program.reserve(zone=workshop_zone, count=1, user=user_client.user))
 
 
 @pytest.mark.django_db
 def test_with_contact(workshop_program, workshop_zone, workshop_row, user_client):
     assert workshop_program.is_reservable()
-    tickets = list(workshop_program.reserve(
-        zone=workshop_zone,
-        count=2,
-        user=user_client.user,
-        name='Nimi',
-        email='user@example.com',
-        phone='0',
-    ))
-    assert(len(tickets) == 2)
+    tickets = list(
+        workshop_program.reserve(
+            zone=workshop_zone,
+            count=2,
+            user=user_client.user,
+            name='Nimi',
+            email='user@example.com',
+            phone='0',
+        )
+    )
+    assert len(tickets) == 2
     ticket = tickets[0]
     resp = user_client.get(reverse('inspect', kwargs={'pk': ticket.pk, 'key': ticket.key}))
     assert not resp.context['show_seats']
     for ticket in tickets:
-        assert ticket.key in force_text(resp.render().content)
+        assert ticket.key in str(resp.render().content)
 
 
 @pytest.mark.django_db

@@ -1,7 +1,7 @@
-from collections import namedtuple, defaultdict
+from collections import defaultdict, namedtuple
 from typing import List, Optional, Set
 
-from paikkala.models import Program, Zone, Row, SeatQualifier
+from paikkala.models import Program, Row, SeatQualifier, Zone
 
 
 class TicketInfo(
@@ -17,9 +17,7 @@ class TicketInfo(
     def qualified_zone(self):
         name = self.zone
         if self.qualifier_texts:
-            name = "{name} {qualifiers}".format(
-                name=name, qualifiers=" ".join(self.qualifier_texts),
-            )
+            name = f"{name} {' '.join(self.qualifier_texts)}"
         return name
 
 
