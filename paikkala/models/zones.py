@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Set
 
 from django.db import models
 from django.db.models import Count, Sum
@@ -8,23 +8,39 @@ if TYPE_CHECKING:
     from paikkala.models.rows import Row
 
 
+# TODO(3.7): dataclass-ify
+class RowReservationStatus:
+    def __init__(
+        self,
+        *,
+        capacity: int,
+        reserved: int,
+        remaining: int,
+        blocked_set: Set[int],
+    ) -> None:
+        self.capacity = capacity
+        self.reserved = reserved
+        self.remaining = remaining
+        self.blocked_set = blocked_set
+
+
 class ZoneReservationStatus(dict):
-    def __init__(self, zone: 'Zone', program: 'Program', data: Dict['Row', Any]) -> None:
+    def __init__(self, zone: 'Zone', program: 'Program', data: Dict['Row', RowReservationStatus]) -> None:
         super().__init__(data)
         self.program = program
         self.zone = zone
 
     @property
     def total_reserved(self) -> int:
-        return sum(r['reserved'] for r in self.values())
+        return sum(r.reserved for r in self.values())
 
     @property
     def total_remaining(self) -> int:
-        return sum(r['remaining'] for r in self.values())
+        return sum(r.remaining for r in self.values())
 
     @property
     def total_capacity(self) -> int:
-        return sum(r['capacity'] for r in self.values())
+        return sum(r.capacity for r in self.values())
 
 
 class Zone(models.Model):
@@ -62,21 +78,20 @@ class Zone(models.Model):
         reservation_count = dict(
             self.tickets.filter(program=program).values('row').annotate(n=Count('id')).values_list('row', 'n')
         )
-        data = {}
+        row_status_map = {}
         block_map = program.get_block_map(zone=self)
         for row in program.rows.filter(zone=self):
             blocked = block_map.get(row.id, set())
             capacity = len(row.get_numbers(additional_excluded_set=blocked))
             reserved = reservation_count.get(row.id, 0)
-            # TODO: De-dict this type
-            data[row] = {
-                'capacity': capacity,
-                'reserved': reserved,
-                'remaining': capacity - reserved,
-                'blocked_set': blocked,
-            }
+            row_status_map[row] = RowReservationStatus(
+                capacity=capacity,
+                reserved=reserved,
+                remaining=capacity - reserved,
+                blocked_set=blocked,
+            )
         return ZoneReservationStatus(
             zone=self,
             program=program,
-            data=data,
+            data=row_status_map,
         )
