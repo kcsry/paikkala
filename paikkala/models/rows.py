@@ -46,8 +46,8 @@ class Row(models.Model):
     def __str__(self) -> str:
         return f'{self.zone.room.name} – {self.zone.name} – {self.name}'
 
-    def get_numbers(self, additional_excluded_set: Set[int] = set()) -> List[int]:
-        excluded_set = self.get_excluded_set() | additional_excluded_set
+    def get_numbers(self, additional_excluded_set: Optional[Set[int]] = None) -> List[int]:
+        excluded_set = self.get_excluded_set().union(additional_excluded_set or ())
         return [number for number in range(self.start_number, self.end_number + 1) if number not in excluded_set]
 
     def get_excluded_set(self) -> Set[int]:
@@ -63,7 +63,7 @@ class Row(models.Model):
         email: Optional[str] = None,
         phone: Optional[str] = None,
         attempt_sequential: bool = True,
-        excluded_numbers: Set[int] = set(),
+        excluded_numbers: Optional[Set[int]] = None,
     ) -> Iterator['Ticket']:
         reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
         unreserved_numbers = [
@@ -82,7 +82,7 @@ class Row(models.Model):
                 unreserved_numbers = acceptable_sequential_runs[0]
                 assert len(unreserved_numbers) >= count
 
-        for x in range(count):
+        for _ in range(count):
             number = unreserved_numbers.pop(0)
             yield program.tickets.create(
                 row=self,

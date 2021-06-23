@@ -32,7 +32,7 @@ class Command(BaseCommand):
         program = room.program_set.first() or create_jussi_program(sibeliustalo_zones, room=room)
         user = User.objects.create_user(f'random-demo-{get_random_string(12)}')
         prog_zones = list(program.zones)
-        for x in range(10):
+        for _ in range(10):
             zone = random.choice(prog_zones)
             count = random.randint(1, 5)
             try:
