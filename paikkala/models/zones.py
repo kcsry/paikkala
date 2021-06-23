@@ -54,7 +54,7 @@ class Zone(models.Model):
         if self.id:
             self.cache_total_capacity()
 
-    def save(self, **kwargs) -> None:
+    def save(self, **kwargs: Any) -> None:
         self.clean()
         super().save(**kwargs)
 

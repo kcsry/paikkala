@@ -1,5 +1,6 @@
+import datetime
 import random
-from typing import List
+from typing import Any, List, Optional
 
 from django.conf import settings
 from django.db import models
@@ -18,7 +19,7 @@ def generate_key() -> str:
 
 
 class TicketQuerySet(models.QuerySet):
-    def valid(self, at=None):
+    def valid(self, at: Optional[datetime.datetime] = None) -> models.QuerySet:
         if not at:
             at = now()
         return self.filter(Q(program__invalid_after__isnull=True) | Q(program__invalid_after__gt=at))
@@ -43,14 +44,14 @@ class Ticket(models.Model):
             ('program', 'zone', 'number'),
         ]
 
-    def is_valid(self, at=None):
+    def is_valid(self, at: Optional[datetime.datetime] = None) -> bool:
         if not at:
             at = now()
         if self.program.invalid_after and at > self.program.invalid_after:
             return False
         return True
 
-    def save(self, **kwargs) -> None:
+    def save(self, **kwargs: Any) -> None:
         if not self.key:
             self.key = generate_key()
         if not self.pk:

@@ -2,6 +2,7 @@ import datetime
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Tuple
 
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now
@@ -142,14 +143,14 @@ class Program(models.Model):
     def reserve(  # noqa: C901
         self,
         *,
-        zone,
-        count,
-        user=None,
-        name=None,
-        email=None,
-        phone=None,
-        allow_scatter=False,
-        attempt_sequential=True,
+        zone: 'Zone',
+        count: int,
+        user: Optional[AbstractBaseUser] = None,
+        name: Optional[str] = None,
+        email: Optional[str] = None,
+        phone: Optional[str] = None,
+        allow_scatter: bool = False,
+        attempt_sequential: bool = True,
     ) -> Iterator['Ticket']:
         """
         Reserve `count` tickets from the zone `zone`.

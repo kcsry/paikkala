@@ -18,7 +18,7 @@ class MessageTemplateMixin:
 
 
 class RelinquishView(MessageTemplateMixin, DeleteView):
-    require_same_user = True
+    require_same_user: bool = True
     model = Ticket
     success_url = '/'
 
@@ -72,8 +72,8 @@ class ReservationView(MessageTemplateMixin, UpdateView):
 
 
 class InspectionView(DetailView):
-    require_same_user = True
-    require_same_zone = False
+    require_same_user: bool = True
+    require_same_zone: bool = False
     model = Ticket
     queryset = Ticket.objects.select_related('program', 'zone')
 

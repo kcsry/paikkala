@@ -29,7 +29,7 @@ def import_zones(  # noqa: C901
     if not qualifier_csv_list:
         qualifier_csv_list = []
 
-    def get_or_create_zone(data):
+    def get_or_create_zone(data: dict) -> Zone:
         room_name = data.get('room', default_room_name)
         zone_name = data['zone']
         rz_key = (room_name, zone_name)
@@ -37,6 +37,7 @@ def import_zones(  # noqa: C901
         if not zone:
             room, room_created = Room.objects.get_or_create(name=room_name)
             zone, zone_created = Zone.objects.get_or_create(room=room, name=zone_name)
+            assert room and zone
             if verbose:
                 if room_created:
                     print(f'Room {room} (id {room.id}) created')

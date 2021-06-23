@@ -1,9 +1,10 @@
 from io import BytesIO
 from itertools import groupby
-from typing import Iterable, Iterator, List, Optional, Set, Tuple
+from typing import Iterable, Iterator, List, Optional, Set, Tuple, Type
 
 from paikkala.models import Program, Zone
 from paikkala.printing.configuration import PrintingConfiguration
+from paikkala.printing.drawing import TicketDrawer
 from paikkala.printing.ticket_info import TicketInfo, generate_ticket_infos
 
 __all__ = [
@@ -16,7 +17,7 @@ __all__ = [
 
 def generate_ticket_pdf(
     *,
-    drawer_class,
+    drawer_class: Type[TicketDrawer],
     configuration: PrintingConfiguration,
     program: Program,
     zones: Optional[List[Zone]] = None,

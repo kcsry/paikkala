@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Iterator, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Set
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.exceptions import ValidationError
@@ -38,7 +38,7 @@ class Row(models.Model):
             raise ValidationError('end number must be greater than start number')
         self.capacity = len(self.get_numbers())
 
-    def save(self, **kwargs) -> None:
+    def save(self, **kwargs: Any) -> None:
         self.clean()
         super().save(**kwargs)
         self.zone.cache_total_capacity(save=True)

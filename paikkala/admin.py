@@ -4,11 +4,11 @@ from paikkala.models import PerProgramBlock, Program, Room, Row, Ticket, Zone
 
 
 class OptimizedRowQueryMixin:
-    def get_field_queryset(self, db, db_field, request):
+    def get_field_queryset(self, db, db_field, request):  # noqa: ANN001,ANN201
         queryset = super().get_field_queryset(db, db_field, request)
         if db_field.name in ('row', 'rows'):
             queryset = (queryset or Row.objects.all()).select_related('zone', 'zone__room')
-        return queryset
+        return queryset  # noqa: R504
 
 
 class RowInline(admin.TabularInline):
@@ -65,7 +65,7 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
     def reserved_tickets(self, instance: Program) -> int:
         return instance.tickets.count()
 
-    def save_related(self, request, form, formsets, change):
+    def save_related(self, request, form, formsets, change):  # noqa: ANN001,ANN201
         super().save_related(request, form, formsets, change)
         # Deferred calculation of max tickets when creating a new Program
         if not change and form.instance.automatic_max_tickets:

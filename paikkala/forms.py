@@ -25,7 +25,7 @@ class ReservationForm(forms.ModelForm):
         fields = ()
         model = Program
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:  # noqa: ANN003
         self.user = kwargs.pop('user', None)
         super().__init__(**kwargs)
         self.mangle_count_field()
