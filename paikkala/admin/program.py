@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from paikkala.models import PerProgramBlock, Program, Room, Row, Ticket, Zone
+from paikkala.models import PerProgramBlock, Program, Row
 
 
 class OptimizedRowQueryMixin:
@@ -9,23 +9,6 @@ class OptimizedRowQueryMixin:
         if db_field.name in ('row', 'rows'):
             queryset = (queryset or Row.objects.all()).select_related('zone', 'zone__room')
         return queryset  # noqa: R504
-
-
-class RowInline(admin.TabularInline):
-    model = Row
-    readonly_fields = ('capacity',)
-
-
-class ZoneAdmin(admin.ModelAdmin):
-    inlines = [RowInline]
-    list_select_related = ('room',)
-    list_display = ('name', 'room', 'capacity')
-    list_filter = ('room',)
-
-
-class RoomAdmin(admin.ModelAdmin):
-    search_fields = ('name',)
-    list_display = ('name',)
 
 
 class PerProgramBlockInline(OptimizedRowQueryMixin, admin.TabularInline):
@@ -71,17 +54,3 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
         if not change and form.instance.automatic_max_tickets:
             form.instance.clean()
             form.instance.save(update_fields=('max_tickets',))
-
-
-class TicketAdmin(admin.ModelAdmin):
-    list_select_related = ('program', 'zone', 'row')
-    list_filter = ('program', 'zone')
-    search_fields = ('user__username',)
-    list_display = ('id', 'program', 'zone', 'row', 'number')
-    raw_id_fields = ('user',)
-
-
-admin.site.register(Program, ProgramAdmin)
-admin.site.register(Ticket, TicketAdmin)
-admin.site.register(Zone, ZoneAdmin)
-admin.site.register(Room, RoomAdmin)
