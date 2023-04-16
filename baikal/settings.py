@@ -3,10 +3,10 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'miu miu miu'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 ROOT_URLCONF = 'baikal.urls'
 WSGI_APPLICATION = 'baikal.wsgi.application'
-AUTH_PASSWORD_VALIDATORS = []
+AUTH_PASSWORD_VALIDATORS = []  # type: ignore
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True

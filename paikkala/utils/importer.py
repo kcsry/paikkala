@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List, TextIO
+from typing import Dict, Iterator, List, Optional, TextIO
 
 from paikkala.models import Room, Zone
 
@@ -21,7 +21,7 @@ def read_csv_file(filename: str, separator: str = ',') -> Iterator[Dict[str, str
 def import_zones(  # noqa: C901
     *,
     row_csv_list: List[Dict[str, str]],
-    qualifier_csv_list: List[Dict[str, str]] = None,
+    qualifier_csv_list: Optional[List[Dict[str, str]]] = None,
     default_room_name: str = 'Room',
     verbose: bool = False,
 ) -> List[Zone]:
