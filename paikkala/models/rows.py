@@ -65,6 +65,11 @@ class Row(models.Model):
         attempt_sequential: bool = True,
         excluded_numbers: Optional[Set[int]] = None,
     ) -> Iterator['Ticket']:
+        """
+        Reserve N seats from this row.
+
+        May return less than N seats if there are not enough seats available.
+        """
         reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
         unreserved_numbers = [
             number
@@ -83,7 +88,10 @@ class Row(models.Model):
                 assert len(unreserved_numbers) >= count
 
         for _ in range(count):
-            number = unreserved_numbers.pop(0)
+            try:
+                number = unreserved_numbers.pop(0)
+            except IndexError:
+                break
             yield program.tickets.create(
                 row=self,
                 zone=self.zone,
