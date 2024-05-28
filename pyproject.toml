@@ -20,6 +20,11 @@ dependencies = [
 printing = [
     "reportlab >= 3.0",
 ]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-django~=4.5",
+]
 
 [project.urls]
 Homepage = "https://github.com/kcsry/paikkala"
