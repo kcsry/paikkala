@@ -8,12 +8,12 @@ dynamic = ["version"]
 description = "Paikkavarauskala"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 authors = [
     { name = "Aarni Koskela", email = "akx@iki.fi" },
 ]
 dependencies = [
-    "Django>=3.0",
+    "Django>=4.2",
 ]
 
 [project.optional-dependencies]
