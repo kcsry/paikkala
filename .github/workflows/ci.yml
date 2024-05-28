@@ -28,6 +28,8 @@ jobs:
       - run: pip install tox-gh-actions tox tox-uv
       - run: tox
       - uses: codecov/codecov-action@v4
+        with:
+          directory: .tox/coverage
   Lint:
     runs-on: ubuntu-latest
     steps:
