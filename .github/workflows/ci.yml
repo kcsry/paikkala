@@ -30,6 +30,7 @@ jobs:
       - uses: codecov/codecov-action@v4
         with:
           directory: .tox/coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
   Lint:
     runs-on: ubuntu-latest
     steps:
