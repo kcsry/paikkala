@@ -8,6 +8,7 @@ from django.utils.timezone import now
 from paikkala.models import Program, Room, Row, Zone
 from paikkala.tests.demo_data import (
     create_jussi_program,
+    create_scatter_program,
     create_workshop_program,
     create_workshop_room,
     create_workshop_row,
@@ -24,6 +25,11 @@ def sibeliustalo_zones():
 @pytest.fixture
 def jussi_program(sibeliustalo_zones):
     return create_jussi_program(sibeliustalo_zones)
+
+
+@pytest.fixture
+def scatter_program(sibeliustalo_zones):
+    return create_scatter_program(sibeliustalo_zones)
 
 
 @pytest.fixture

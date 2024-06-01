@@ -18,8 +18,9 @@ class ReservationForm(forms.ModelForm):
     max_count = 5
     integrity_error_retries = 10
 
-    zone = ReservationZoneChoiceField(queryset=Zone.objects.none(), empty_label=None)
+    zone = ReservationZoneChoiceField(queryset=Zone.objects.none(), required=False, empty_label='Any')
     count = forms.IntegerField(min_value=1, initial=1)
+    allow_scatter = forms.BooleanField(required=True)
 
     class Meta:
         fields = ()
@@ -54,7 +55,11 @@ class ReservationForm(forms.ModelForm):
             # This additional magic is required because widgets don't have access to their
             # parent fields.  That would be all too easy.
             # ReservationZoneSelect.create_option will process the `z` object here to something sane.
-            zone_field.choices = [(z.id, z) for z in zone_field.queryset]
+            if self.instance.numbered_seats:
+                zone_field.choices = [('', 'Any')]
+            else:
+                zone_field.choices = []
+            zone_field.choices += [(z.id, z) for z in zone_field.queryset]
             zone_field.populate_reservation_statuses(program=self.instance)
             if len(zone_field.choices) == 1 and not self.instance.numbered_seats:
                 zone_field.widget = HiddenInput()
@@ -87,6 +92,7 @@ class ReservationForm(forms.ModelForm):
                             phone=self.cleaned_data.get('phone'),
                             zone=zone,
                             count=count,
+                            allow_scatter=self.cleaned_data['allow_scatter'],
                         )
                     )
             except IntegrityError:  # pragma: no cover

@@ -15,6 +15,7 @@ def test_reserve(jussi_program, user_client):
             {
                 'zone': jussi_program.zones[0].pk,
                 'count': 5,
+                'allow_scatter': 0,
             },
         ).status_code
         == 302
