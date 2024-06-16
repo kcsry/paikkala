@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 from collections import defaultdict
 from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Tuple
@@ -13,7 +15,6 @@ from paikkala.excs import (
     MaxTicketsPerUserReached,
     MaxTicketsReached,
     NoCapacity,
-    NoRowCapacity,
     Unreservable,
     UserRequired,
 )
@@ -143,7 +144,7 @@ class Program(models.Model):
     def reserve(  # noqa: C901
         self,
         *,
-        zone: 'Zone',
+        zone: Optional['Zone'],
         count: int,
         user: Optional[AbstractBaseUser] = None,
         name: Optional[str] = None,
@@ -161,13 +162,16 @@ class Program(models.Model):
         This method is a generator, so please be sure to fully iterate it
         (i.e. `list(p.reserve())`).  Also, it'd be prudent to run it within a transaction.
 
-        :param zone:
+        :param zone: The zone to use, or None for any zone available
         :param count:
         :param user:
-        :param allow_scatter: Whether to allow allocating tickets from scattered rows.
+        :param allow_scatter: Whether to allow allocating tickets from scattered rows. \
+                              Overrides `attempt_sequential` to False.
         :param attempt_sequential: Attempt allocation of sequential seats from each row.
         :return:
         """
+
+        # Trivial sanity checks
         if user and user.is_anonymous:
             user = None
 
@@ -185,39 +189,84 @@ class Program(models.Model):
                 f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted'
             )
         self.check_reservable()
-        reservation_status = zone.get_reservation_status(program=self)
-        total_reserved = reservation_status.total_reserved
+
+        # User and program quota checks
+        if allow_scatter:
+            attempt_sequential = False
+
+        total_reserved = sum(z.get_reservation_status(self).total_reserved for z in self.zones)
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached(
                 f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}'
             )
+
         if user and self.tickets.filter(user=user).count() + count > self.max_tickets_per_user:
             raise MaxTicketsPerUserReached(
                 f'{user} reserving {count} more tickets would overdraw '
                 f'{self}\'s per-user ticket limit {self.max_tickets_per_user}'
             )
-        new_reservations = []
-        reserve_count = count  # Count remaining to reserve
-        for row, row_status in sorted(reservation_status.items(), key=lambda pair: pair[1].remaining):
-            if row_status.remaining >= reserve_count or allow_scatter or not self.numbered_seats:
-                row_count = min(reserve_count, row_status.remaining)
-                new_reservations.append((row, row_count))
-                reserve_count -= row_count
-            if reserve_count <= 0:
-                break
-        if reserve_count > 0:  # Oops, ran out of rows with tickets left unscattered
-            raise NoCapacity(f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone}')
-        if not new_reservations:
-            raise NoRowCapacity(f'No single row in zone {zone} has {count} tickets left (try scatter?)')
 
-        for row, row_count in new_reservations:
-            yield from row.reserve(
-                program=self,
-                count=row_count,
-                user=user,
-                name=name,
-                email=email,
-                phone=phone,
-                attempt_sequential=attempt_sequential,
-                excluded_numbers=reservation_status[row].blocked_set,
-            )
+        def _reserve_inner(count: int, zone: 'Zone', allow_partial: bool) -> Iterator['Ticket']:
+            reservation_status = zone.get_reservation_status(self)
+            new_reservations: list[tuple[Row, int]] = []
+            reserve_count = count  # Count remaining to reserve
+            for row, row_status in sorted(reservation_status.items(), key=lambda pair: pair[1].remaining):
+                # Add a reservation if:
+                # 1. we can get all requested seats in a single row; or
+                # 2. scatter is allowed (in which case get as many as we can); or
+                # 3. the seats are not numbered (in which case also get as many as we can)
+                if row_status.remaining >= reserve_count or allow_scatter or not self.numbered_seats:
+                    row_count = min(reserve_count, row_status.remaining)
+                    new_reservations.append((row, row_count))
+                    reserve_count -= row_count
+                if reserve_count <= 0:
+                    break
+
+            if reserve_count > 0 and not allow_partial:
+                if allow_scatter:
+                    raise NoCapacity(f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone}')
+                raise NoCapacity(
+                    f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone} (try scatter?)'
+                )
+
+            for row, row_count in new_reservations:
+                yield from row.reserve(
+                    program=self,
+                    count=row_count,
+                    user=user,
+                    name=name,
+                    email=email,
+                    phone=phone,
+                    attempt_sequential=attempt_sequential and not allow_scatter,
+                    excluded_numbers=reservation_status[row].blocked_set,
+                )
+
+        # Single zone: trivial case, scatter is handled in _reserve_inner
+        if zone is not None:
+            yield from _reserve_inner(count, zone, False)
+
+        # Multiple zones, no scatter: loop through zones, accept the first one that gave us the full ticket amount
+        elif not allow_scatter:
+            tickets = None
+            for try_zone in self.zones.all():
+                try:
+                    tickets = list(_reserve_inner(count, try_zone, False))
+                    break
+                except NoCapacity:
+                    continue
+            if not tickets:
+                raise NoCapacity(f'Unable to allocate {count} tickets from any single zone (no scatter)')
+            yield from tickets
+
+        # Multiple zones with scatter: loop through zones, attempting to get the full ticket amount in total
+        else:
+            reserved: list[Ticket] = []
+            for try_zone in self.zones.all():
+                chunk = list(_reserve_inner(count - len(reserved), try_zone, True))
+                reserved += chunk
+                if len(reserved) >= count:
+                    assert len(reserved) == count
+                    break
+            if len(reserved) < count:
+                raise NoCapacity('Unable to allocate {count} tickets total from any zone with scatter')
+            yield from reserved

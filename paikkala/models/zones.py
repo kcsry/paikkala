@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Set
 
 from django.db import models
@@ -8,20 +9,12 @@ if TYPE_CHECKING:
     from paikkala.models.rows import Row
 
 
-# TODO(3.7): dataclass-ify
+@dataclass
 class RowReservationStatus:
-    def __init__(
-        self,
-        *,
-        capacity: int,
-        reserved: int,
-        remaining: int,
-        blocked_set: Set[int],
-    ) -> None:
-        self.capacity = capacity
-        self.reserved = reserved
-        self.remaining = remaining
-        self.blocked_set = blocked_set
+    capacity: int
+    reserved: int
+    remaining: int
+    blocked_set: Set[int]
 
 
 class ZoneReservationStatus(dict):
