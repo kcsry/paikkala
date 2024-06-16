@@ -5,15 +5,17 @@ from django.test import Client
 from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 
-from paikkala.models import Program, Room, Row, Zone
-from paikkala.tests.demo_data import (
+from paikkala.demo_data import (
     create_jussi_program,
+    import_sibeliustalo_zones,
+)
+from paikkala.models import Program, Room, Row, Zone
+from paikkala_tests.utils import (
     create_scatter_program,
     create_workshop_program,
     create_workshop_room,
     create_workshop_row,
     create_workshop_zone,
-    import_sibeliustalo_zones,
 )
 
 
