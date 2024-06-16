@@ -7,18 +7,18 @@ from django.core.management import BaseCommand
 from django.db.transaction import atomic
 from django.utils.crypto import get_random_string
 
-from paikkala.excs import NoCapacity
-from paikkala.models import Zone
-from paikkala.tests.demo_data import (
+from paikkala.demo_data import (
     SIBELIUSTALO_DEFAULT_ROOM_NAME,
     create_jussi_program,
     import_sibeliustalo_zones,
 )
+from paikkala.excs import NoCapacity
+from paikkala.models import Zone
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--yes', '-y', default=False, action='store_true')
+        parser.add_argument("--yes", "-y", default=False, action="store_true")
 
     @atomic
     def handle(self, yes: bool, **options: Any) -> None:

@@ -145,6 +145,4 @@ def test_automatic_max_tickets(jussi_program):
 def test_attempt_sequential(lattia_program, attempt_sequential):
     zone = lattia_program.zones[0]
     tickets = list(lattia_program.reserve(zone=zone, count=3, attempt_sequential=attempt_sequential))
-    assert [t.number for t in tickets] == (
-        [1, 2, 6] if not attempt_sequential else [6, 7, 8]
-    )
+    assert [t.number for t in tickets] == ([1, 2, 6] if not attempt_sequential else [6, 7, 8])

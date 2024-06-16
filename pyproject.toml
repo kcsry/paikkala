@@ -82,10 +82,13 @@ max-complexity = 10
     "ANN003",
     "ANN201",
 ]
-"*/tests/*.py" = [
+"paikkala_tests/*.py" = [
     "ANN",
 ]
 "*/migrations/*.py" = [
     "ANN",
     "E501",
 ]
+
+[tool.ruff.format]
+quote-style = "preserve"
