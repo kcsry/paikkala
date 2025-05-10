@@ -62,7 +62,8 @@ class Ticket(models.Model):
         self.qualifier_text_cache = '\n'.join([
             q.text
             for q
-            in self.zone.seat_qualifiers.filter(start_number__lte=self.number, end_number__gte=self.number)
+            in self.zone.cached_seat_qualifiers
+            if q.start <= self.number and q.end >= self.number
         ])
 
     @property
