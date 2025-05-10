@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import os
 import pytest
 from django.contrib.auth.models import AnonymousUser
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from paikkala.excs import (
     BatchSizeOverflow,
@@ -12,6 +15,14 @@ from paikkala.excs import (
     UserRequired,
 )
 from paikkala.models import Program
+
+@pytest.fixture(autouse=True)
+def log_sql(request):
+    if os.environ.get('PYTEST_LOG_SQL'):
+        with CaptureQueriesContext(connection):
+            yield connection
+    else:
+        yield connection
 
 
 @pytest.mark.django_db
