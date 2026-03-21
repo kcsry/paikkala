@@ -18,6 +18,7 @@ from paikkala.excs import (
     Unreservable,
     UserRequired,
 )
+from paikkala.models.cache import PaikkalaCache
 
 if TYPE_CHECKING:
     from paikkala.models.rows import Row
@@ -95,7 +96,6 @@ class Program(models.Model):
     @property
     def zones(self) -> QuerySet:
         from paikkala.models import Zone
-
         return Zone.objects.filter(rows__in=self.rows.all()).distinct()
 
     def get_block_map(self, zone: Optional['Zone'] = None) -> Dict[int, Set[int]]:
@@ -108,7 +108,7 @@ class Program(models.Model):
         blocks_by_row_id: Dict[int, Set[int]] = defaultdict(set)
         qs = self.blocks.filter(row__zone=zone) if zone else self.blocks.all()
         for block in qs:
-            blocks_by_row_id[block.row_id] |= block.get_excluded_set()
+            blocks_by_row_id[block.row_id] |= block.excluded_set
         return dict(blocks_by_row_id)
 
     def get_rows_and_numbers(self, zone: None = None) -> Iterator[Tuple['Row', List[int]]]:
@@ -171,7 +171,7 @@ class Program(models.Model):
         :return:
         """
 
-        # Trivial sanity checks
+        # Trivial sanity checks, nothing should touch the database here
         if user and user.is_anonymous:
             user = None
 
@@ -188,6 +188,9 @@ class Program(models.Model):
             raise BatchSizeOverflow(
                 f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted'
             )
+
+        # Create cache object
+        cache = PaikkalaCache()
         self.check_reservable()
 
         # User and program quota checks

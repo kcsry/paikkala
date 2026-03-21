@@ -38,9 +38,6 @@ class ZoneReservationStatus(dict):
         return sum(r.capacity for r in self.values())
 
 
-CachedQualifier = namedtuple('CachedQualifier', ['text', 'start', 'end'])
-
-
 class Zone(models.Model):
     room = models.ForeignKey('paikkala.Room', on_delete=models.PROTECT)
     name = models.CharField(max_length=100)
@@ -63,11 +60,6 @@ class Zone(models.Model):
         self.capacity = self.rows.aggregate(capacity=Sum('capacity')).get('capacity', 0)
         if save:
             self.save(update_fields=('capacity',))
-
-    @cached_property
-    def cached_seat_qualifiers(self) -> list[CachedQualifier]:
-        quals = self.seat_qualifiers.all()
-        return list(CachedQualifier(q.text, q.start_number, q.end_number) for q in quals)
 
     def clean(self) -> None:
         if self.id:
