@@ -1,6 +1,5 @@
 import logging
 import time
-from typing import List
 
 from django import forms
 from django.core.validators import MaxValueValidator
@@ -76,7 +75,7 @@ class ReservationForm(forms.ModelForm):
         if self.max_count:
             self.fields['count'].validators.append(MaxValueValidator(self.max_count))
 
-    def save(self, commit: bool = True) -> List[Ticket]:
+    def save(self, commit: bool = True) -> list[Ticket]:
         assert commit
         retry_attempts = self.integrity_error_retries
         while True:

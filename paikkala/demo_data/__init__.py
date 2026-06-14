@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from datetime import timedelta
-from typing import Dict, List, Optional
 
 from django.utils.timezone import now
 
@@ -12,15 +11,15 @@ from paikkala.utils.importer import import_zones, read_csv_file
 SIBELIUSTALO_DEFAULT_ROOM_NAME = 'Pääsali'
 
 
-def get_sibeliustalo_rows() -> List[Dict[str, str]]:
+def get_sibeliustalo_rows() -> list[dict[str, str]]:
     return list(read_csv_file(os.path.join(os.path.dirname(__file__), 'sibeliustalo.txt')))
 
 
-def get_sibeliustalo_qualifiers() -> List[Dict[str, str]]:
+def get_sibeliustalo_qualifiers() -> list[dict[str, str]]:
     return list(read_csv_file(os.path.join(os.path.dirname(__file__), 'sibeliustalo-qualifiers.txt')))
 
 
-def import_sibeliustalo_zones() -> List[Zone]:
+def import_sibeliustalo_zones() -> list[Zone]:
     return import_zones(
         row_csv_list=get_sibeliustalo_rows(),
         qualifier_csv_list=get_sibeliustalo_qualifiers(),
@@ -28,7 +27,7 @@ def import_sibeliustalo_zones() -> List[Zone]:
     )
 
 
-def create_jussi_program(zones: List[Zone], room: Optional[Room] = None) -> Program:
+def create_jussi_program(zones: list[Zone], room: Room | None = None) -> Program:
     if not room:
         room = zones[0].room
     program = Program.objects.create(

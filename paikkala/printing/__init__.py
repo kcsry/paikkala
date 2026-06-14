@@ -1,6 +1,6 @@
+from collections.abc import Iterable, Iterator
 from io import BytesIO
 from itertools import groupby
-from typing import Iterable, Iterator, List, Optional, Set, Tuple, Type
 
 from paikkala.models import Program, Zone
 from paikkala.printing.configuration import PrintingConfiguration
@@ -17,12 +17,12 @@ __all__ = [
 
 def generate_ticket_pdf(
     *,
-    drawer_class: Type[TicketDrawer],
+    drawer_class: type[TicketDrawer],
     configuration: PrintingConfiguration,
     program: Program,
-    zones: Optional[List[Zone]] = None,
-    included_numbers: Optional[Set[int]] = None,
-    excluded_numbers: Optional[Set[int]] = None,
+    zones: list[Zone] | None = None,
+    included_numbers: set[int] | None = None,
+    excluded_numbers: set[int] | None = None,
 ) -> bytes:
     from reportlab.pdfgen.canvas import Canvas
 
@@ -35,7 +35,7 @@ def generate_ticket_pdf(
         excluded_numbers=excluded_numbers,
     )
 
-    groups: Iterable[Tuple[Optional[int], Iterator[TicketInfo]]]
+    groups: Iterable[tuple[int | None, Iterator[TicketInfo]]]
     if configuration.separate_zones:
         groups = groupby(ticket_infos, key=lambda ti: ti.zone.id)
     else:

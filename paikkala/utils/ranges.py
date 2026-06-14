@@ -1,9 +1,8 @@
-from typing import Set
 
 from django.core.exceptions import ValidationError
 
 
-def parse_number_set(number_set: str) -> Set[int]:
+def parse_number_set(number_set: str) -> set[int]:
     """
     Parse a number set string to a set of integers.
 
@@ -27,8 +26,8 @@ def parse_number_set(number_set: str) -> Set[int]:
     [-5, -4, -3, -2, -1]
 
     """
-    incl: Set[int] = set()
-    excl: Set[int] = set()
+    incl: set[int] = set()
+    excl: set[int] = set()
     for atom in number_set.split(','):
         atom = atom.strip()
         if not atom:
@@ -48,7 +47,7 @@ def parse_number_set(number_set: str) -> Set[int]:
     return incl - excl
 
 
-def validate_number_set(number_set: str) -> Set[int]:
+def validate_number_set(number_set: str) -> set[int]:
     try:
         return parse_number_set(number_set)
     except Exception as exc:

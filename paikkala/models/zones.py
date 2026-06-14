@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Set
+from typing import TYPE_CHECKING, Any
 
 from django.db import models
 from django.db.models import Count, Sum
@@ -14,11 +14,11 @@ class RowReservationStatus:
     capacity: int
     reserved: int
     remaining: int
-    blocked_set: Set[int]
+    blocked_set: set[int]
 
 
 class ZoneReservationStatus(dict):
-    def __init__(self, zone: 'Zone', program: 'Program', data: Dict['Row', RowReservationStatus]) -> None:
+    def __init__(self, zone: 'Zone', program: 'Program', data: dict['Row', RowReservationStatus]) -> None:
         super().__init__(data)
         self.program = program
         self.zone = zone
