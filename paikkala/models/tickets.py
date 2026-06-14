@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import random
 from typing import Any
@@ -51,19 +53,22 @@ class Ticket(models.Model):
             return False
         return True
 
-    def save(self, **kwargs: Any) -> None:
+    def prepare_save(self) -> None:
         if not self.key:
             self.key = generate_key()
         if not self.pk:
             self.recompute_qualifiers()
+
+    def save(self, **kwargs: Any) -> None:
+        self.prepare_save()
         return super().save(**kwargs)
 
     def recompute_qualifiers(self) -> None:
-        self.qualifier_text_cache = '\n'.join([
-            q.text
-            for q
-            in self.zone.seat_qualifiers.filter(start_number__lte=self.number, end_number__gte=self.number)
-        ])
+        # Filter in Python over `.all()` so this uses the zone's prefetched seat
+        # qualifiers when available (see `Row.reserve`), avoiding a query per ticket.
+        self.qualifier_text_cache = '\n'.join(
+            [q.text for q in self.zone.seat_qualifiers.all() if q.start_number <= self.number <= q.end_number]
+        )
 
     @property
     def qualifier_texts(self) -> list[str]:
@@ -74,7 +79,7 @@ class Ticket(models.Model):
         name = str(self.zone)
         if self.qualifier_texts:
             qualifiers = ' '.join(self.qualifier_texts)
-            name = f'{name} {qualifiers}'
+            name = f'{name} {qualifiers}'.strip()
         return name
 
     def __str__(self) -> str:

@@ -246,6 +246,7 @@ class Program(models.Model):
                     phone=phone,
                     attempt_sequential=attempt_sequential and not allow_scatter,
                     excluded_numbers=reservation_status[row].blocked_set,
+                    reserved_numbers=reservation_status[row].reserved_set,
                 )
 
         # Single zone: trivial case, scatter is handled in _reserve_inner
