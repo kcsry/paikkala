@@ -24,6 +24,27 @@ def test_reserve(jussi_program, user_client):
 
 
 @pytest.mark.django_db
+def test_bound_form_skips_reservation_status(jussi_program, user_client):
+    from paikkala.forms import ReservationForm
+
+    zone = jussi_program.zones.first()
+
+    # An unbound (GET) form computes the per-zone "seats remaining" figures...
+    unbound = ReservationForm(instance=jussi_program, user=user_client.user)
+    assert unbound.fields['zone'].reservation_statuses
+    assert '(' in unbound.fields['zone'].label_from_instance(zone)
+
+    # ...but a bound (POST) form skips that work, so labels fall back to str(zone).
+    bound = ReservationForm(
+        data={'zone': zone.pk, 'count': 1, 'allow_scatter': 0},
+        instance=jussi_program,
+        user=user_client.user,
+    )
+    assert bound.fields['zone'].reservation_statuses == {}
+    assert bound.fields['zone'].label_from_instance(zone) == str(zone)
+
+
+@pytest.mark.django_db
 def test_relinquish(jussi_program, user_client):
     assert jussi_program.is_reservable()
     (ticket,) = jussi_program.reserve(zone=jussi_program.zones[0], count=1, user=user_client.user)

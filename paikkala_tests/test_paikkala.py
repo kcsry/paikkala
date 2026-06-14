@@ -113,6 +113,28 @@ def test_reserve_single_zone_query_count_independent_of_zone_count(jussi_program
 
 
 @pytest.mark.django_db
+def test_with_ticket_counts_annotation(jussi_program):
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    zone = jussi_program.zones.get(name='Permanto')
+    list(jussi_program.reserve(zone=zone, count=3))
+
+    annotated = Program.objects.with_ticket_counts().get(pk=jussi_program.pk)
+    assert annotated.num_tickets == 3
+    # remaining_tickets reads the annotation without issuing another COUNT.
+    with CaptureQueriesContext(connection) as ctx:
+        assert annotated.remaining_tickets == jussi_program.max_tickets - 3
+    assert len(ctx) == 0
+
+    # Without the annotation it falls back to a COUNT query.
+    fresh = Program.objects.get(pk=jussi_program.pk)
+    with CaptureQueriesContext(connection) as ctx:
+        assert fresh.remaining_tickets == jussi_program.max_tickets - 3
+    assert len(ctx) == 1
+
+
+@pytest.mark.django_db
 def test_reserve_user_required(jussi_program):
     jussi_program.require_user = True
     jussi_program.save()
