@@ -96,6 +96,23 @@ def test_reserve_scatter_multi_zone_fail(scatter_program):
 
 
 @pytest.mark.django_db
+def test_reserve_single_zone_query_count_independent_of_zone_count(jussi_program):
+    # Reserving from a single zone must not compute the reservation status of
+    # *every* zone in the program (regression test for the multi-zone scatter
+    # change, which made each reservation O(number of zones) in DB queries).
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    zone = jussi_program.zones.get(name='Permanto')
+    assert jussi_program.zones.count() > 1
+    with CaptureQueriesContext(connection) as ctx:
+        list(jussi_program.reserve(zone=zone, count=1))
+    # 8 queries are enough for a single-ticket reservation regardless of how many
+    # zones the program spans; allow a little slack but catch O(zones) blowups.
+    assert len(ctx) <= 12, '\n'.join(q['sql'] for q in ctx.captured_queries)
+
+
+@pytest.mark.django_db
 def test_reserve_user_required(jussi_program):
     jussi_program.require_user = True
     jussi_program.save()

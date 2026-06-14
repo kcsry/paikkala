@@ -195,7 +195,13 @@ class Program(models.Model):
         if allow_scatter:
             attempt_sequential = False
 
-        total_reserved = sum(z.get_reservation_status(self).total_reserved for z in self.zones)
+        # The total number of tickets reserved for this program equals the sum of
+        # every zone's `total_reserved`, since each ticket belongs to exactly one
+        # of the program's rows (and thus one zone). Counting tickets directly is a
+        # single cheap query, whereas computing each zone's reservation status would
+        # build per-row capacities and block maps for the entire program just to
+        # discard everything but the totals.
+        total_reserved = self.tickets.count()
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached(
                 f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}'

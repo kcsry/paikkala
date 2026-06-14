@@ -73,7 +73,9 @@ class Zone(models.Model):
         )
         row_status_map = {}
         block_map = program.get_block_map(zone=self)
-        for row in program.rows.filter(zone=self):
+        # `select_related('zone')` keeps `row.reserve()` from issuing a query per row
+        # when it reads `row.zone` to stamp the created tickets.
+        for row in program.rows.filter(zone=self).select_related('zone'):
             blocked = block_map.get(row.id, set())
             capacity = len(row.get_numbers(additional_excluded_set=blocked))
             reserved = reservation_count.get(row.id, 0)
