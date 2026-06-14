@@ -132,10 +132,14 @@ class Program(models.Model):
             return False
         return self.reservation_start <= now() <= self.reservation_end
 
-    def check_reservable(self) -> None:
+    def check_reservable(self, *, total_reserved: int | None = None) -> None:
         if not self.is_reservable():
             raise Unreservable(f'{self} is not reservable at this time')
-        if self.remaining_tickets <= 0:
+        # `total_reserved` may be passed in by callers that have already counted the
+        # program's tickets, to avoid a redundant COUNT query on the reservation path.
+        if total_reserved is None:
+            total_reserved = self.tickets.count()
+        if total_reserved >= self.max_tickets:
             raise MaxTicketsReached(f'{self} has no remaining tickets.')
 
     @property
@@ -189,19 +193,19 @@ class Program(models.Model):
             raise BatchSizeOverflow(
                 f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted'
             )
-        self.check_reservable()
-
-        # User and program quota checks
         if allow_scatter:
             attempt_sequential = False
 
+        # User and program quota checks.
         # The total number of tickets reserved for this program equals the sum of
         # every zone's `total_reserved`, since each ticket belongs to exactly one
         # of the program's rows (and thus one zone). Counting tickets directly is a
         # single cheap query, whereas computing each zone's reservation status would
         # build per-row capacities and block maps for the entire program just to
-        # discard everything but the totals.
+        # discard everything but the totals. We compute it once and reuse it for
+        # `check_reservable()` too.
         total_reserved = self.tickets.count()
+        self.check_reservable(total_reserved=total_reserved)
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached(
                 f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}'
