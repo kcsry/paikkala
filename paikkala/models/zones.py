@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from django.db import models
@@ -18,7 +18,10 @@ class RowReservationStatus:
     reserved: int
     remaining: int
     blocked_set: set[int]
-    reserved_set: set[int]
+    # The concrete set of reserved seat numbers. Only the allocation path
+    # (`Zone.get_reservation_status`) populates this; the batched display path
+    # (`Program.get_reservation_statuses`) only needs counts, so it's optional.
+    reserved_set: set[int] = field(default_factory=set)
 
 
 class ZoneReservationStatus(dict):

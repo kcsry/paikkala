@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.utils.timezone import now
 
 from paikkala.excs import (
@@ -23,7 +23,7 @@ from paikkala.excs import (
 if TYPE_CHECKING:
     from paikkala.models.rows import Row
     from paikkala.models.tickets import Ticket
-    from paikkala.models.zones import Zone
+    from paikkala.models.zones import Zone, ZoneReservationStatus
 
 
 class ProgramQuerySet(models.QuerySet):
@@ -36,6 +36,15 @@ class ProgramQuerySet(models.QuerySet):
         if not at:
             at = now()
         return self.filter(Q(invalid_after__isnull=True) | Q(invalid_after__gt=at))
+
+    def with_ticket_counts(self) -> ProgramQuerySet:
+        """
+        Annotate each program with `num_tickets`, so `remaining_tickets`
+        can be read without an extra COUNT query per program.
+
+        Useful for listing pages that would otherwise issue one COUNT per row.
+        """
+        return self.annotate(num_tickets=Count('tickets'))
 
 
 class Program(models.Model):
@@ -127,6 +136,44 @@ class Program(models.Model):
         for row in row_qs:
             yield (row, row.get_numbers(additional_excluded_set=block_map.get(row.id, set())))
 
+    def get_reservation_statuses(self, zones: Iterator[Zone] | None = None) -> dict[Zone, ZoneReservationStatus]:
+        """
+        Compute the reservation status of several zones at once.
+
+        Unlike calling `Zone.get_reservation_status` in a loop (which issues
+        ~3 queries per zone), this computes everything in a constant number of
+        queries regardless of the number of zones, which matters a lot when
+        rendering the reservation form under load.
+
+        :param zones: Zones to compute for; defaults to all of the program's zones.
+        :return: Dict of Zone <-> ZoneReservationStatus.
+        """
+        from paikkala.models.zones import RowReservationStatus, ZoneReservationStatus
+
+        zone_list = list(self.zones if zones is None else zones)
+
+        reservation_count = dict(self.tickets.values_list('row').annotate(n=Count('id')))
+        block_map = self.get_block_map()
+        rows_by_zone_id: dict[int, list[Row]] = defaultdict(list)
+        for row in self.rows.filter(zone__in=zone_list).select_related('zone'):
+            rows_by_zone_id[row.zone_id].append(row)
+
+        statuses: dict[Zone, ZoneReservationStatus] = {}
+        for zone in zone_list:
+            row_status_map = {}
+            for row in rows_by_zone_id.get(zone.id, ()):
+                blocked = block_map.get(row.id, set())
+                capacity = len(row.get_numbers(additional_excluded_set=blocked))
+                reserved = reservation_count.get(row.id, 0)
+                row_status_map[row] = RowReservationStatus(
+                    capacity=capacity,
+                    reserved=reserved,
+                    remaining=capacity - reserved,
+                    blocked_set=blocked,
+                )
+            statuses[zone] = ZoneReservationStatus(zone=zone, program=self, data=row_status_map)
+        return statuses
+
     def is_reservable(self) -> bool:
         if not (self.reservation_start and self.reservation_end):
             return False
@@ -144,7 +191,12 @@ class Program(models.Model):
 
     @property
     def remaining_tickets(self) -> int:
-        return self.max_tickets - self.tickets.count()
+        # Prefer an annotated count (see `ProgramQuerySet.with_ticket_counts`)
+        # to avoid an extra COUNT query when listing many programs at once.
+        num_tickets = getattr(self, 'num_tickets', None)
+        if num_tickets is None:
+            num_tickets = self.tickets.count()
+        return self.max_tickets - num_tickets
 
     def reserve(  # noqa: C901
         self,
