@@ -1,4 +1,3 @@
-from typing import List
 
 from .ticket_info import TicketInfo
 
@@ -23,7 +22,7 @@ class PrintingConfiguration:
     left_offset = 0.45 * cm
     separate_zones = True
 
-    def get_text_lines(self, ticket_info: TicketInfo) -> List[str]:
+    def get_text_lines(self, ticket_info: TicketInfo) -> list[str]:
         return [
             ticket_info.program,
             ticket_info.qualified_zone,

@@ -1,4 +1,3 @@
-from typing import Set
 
 from django.db import models
 
@@ -15,5 +14,5 @@ class PerProgramBlock(models.Model):
         help_text='seat numbers to block from this row in this program',
     )
 
-    def get_excluded_set(self) -> Set[int]:
+    def get_excluded_set(self) -> set[int]:
         return parse_number_set(self.excluded_numbers)

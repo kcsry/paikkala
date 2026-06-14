@@ -1,9 +1,10 @@
-from typing import Dict, Iterator, List, Optional, TextIO
+from collections.abc import Iterator
+from typing import TextIO
 
 from paikkala.models import Room, Zone
 
 
-def read_csv(infp: TextIO, separator: str = ',') -> Iterator[Dict[str, str]]:
+def read_csv(infp: TextIO, separator: str = ',') -> Iterator[dict[str, str]]:
     headers = None
     for line in infp:
         line_list = line.strip().split(separator)
@@ -13,19 +14,19 @@ def read_csv(infp: TextIO, separator: str = ',') -> Iterator[Dict[str, str]]:
         yield dict(zip(headers, line_list))
 
 
-def read_csv_file(filename: str, separator: str = ',') -> Iterator[Dict[str, str]]:
+def read_csv_file(filename: str, separator: str = ',') -> Iterator[dict[str, str]]:
     with open(filename, encoding='utf-8') as infp:
         yield from read_csv(infp, separator)
 
 
 def import_zones(  # noqa: C901
     *,
-    row_csv_list: List[Dict[str, str]],
-    qualifier_csv_list: Optional[List[Dict[str, str]]] = None,
+    row_csv_list: list[dict[str, str]],
+    qualifier_csv_list: list[dict[str, str]] | None = None,
     default_room_name: str = 'Room',
     verbose: bool = False,
-) -> List[Zone]:
-    rooms_zones: Dict[tuple, Zone] = {}
+) -> list[Zone]:
+    rooms_zones: dict[tuple, Zone] = {}
     if not qualifier_csv_list:
         qualifier_csv_list = []
 

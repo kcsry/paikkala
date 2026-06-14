@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Set
+from collections.abc import Iterator
+from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.exceptions import ValidationError
@@ -46,11 +47,11 @@ class Row(models.Model):
     def __str__(self) -> str:
         return f'{self.zone.room.name} – {self.zone.name} – {self.name}'
 
-    def get_numbers(self, additional_excluded_set: Optional[Set[int]] = None) -> List[int]:
+    def get_numbers(self, additional_excluded_set: set[int] | None = None) -> list[int]:
         excluded_set = self.get_excluded_set().union(additional_excluded_set or ())
         return [number for number in range(self.start_number, self.end_number + 1) if number not in excluded_set]
 
-    def get_excluded_set(self) -> Set[int]:
+    def get_excluded_set(self) -> set[int]:
         return parse_number_set(self.excluded_numbers)
 
     def reserve(
@@ -58,12 +59,12 @@ class Row(models.Model):
         *,
         program: 'Program',
         count: int,
-        user: Optional[AbstractBaseUser] = None,
-        name: Optional[str] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
+        user: AbstractBaseUser | None = None,
+        name: str | None = None,
+        email: str | None = None,
+        phone: str | None = None,
         attempt_sequential: bool = True,
-        excluded_numbers: Optional[Set[int]] = None,
+        excluded_numbers: set[int] | None = None,
     ) -> Iterator['Ticket']:
         """
         Reserve N seats from this row.

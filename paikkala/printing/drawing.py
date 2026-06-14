@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Iterator, Tuple
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 from .configuration import PrintingConfiguration, cm
 from .ticket_info import TicketInfo
@@ -30,7 +31,7 @@ class TicketDrawer:
                     self.canvas.restoreState()
             self.canvas.showPage()
 
-    def get_ticket_coords(self, ix: int, iy: int) -> Tuple[float, float]:
+    def get_ticket_coords(self, ix: int, iy: int) -> tuple[float, float]:
         ticket_margin = self.configuration.ticket_margin
         page_margin = self.configuration.page_margin
 

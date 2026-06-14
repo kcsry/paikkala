@@ -2,7 +2,6 @@ import hashlib
 import hmac
 import struct
 from colorsys import hsv_to_rgb
-from typing import Tuple, Union
 
 from django.conf import settings
 from django.utils.encoding import force_bytes
@@ -28,12 +27,8 @@ class ProgramStyle:
         self.color2 = color2
 
 
-def decimal_rgb_to_hex(rgb: Tuple[Union[int, float], Union[int, float], Union[int, float]]) -> str:
-    return '#{:02x}{:02x}{:02x}'.format(
-        int(rgb[0] * 255),
-        int(rgb[1] * 255),
-        int(rgb[2] * 255),
-    )
+def decimal_rgb_to_hex(rgb: tuple[int | float, int | float, int | float]) -> str:
+    return f'#{int(rgb[0] * 255):02x}{int(rgb[1] * 255):02x}{int(rgb[2] * 255):02x}'
 
 
 def compute_program_style(program: Program) -> ProgramStyle:

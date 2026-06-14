@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import datetime
 from collections import defaultdict
-from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Tuple
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
@@ -26,12 +27,12 @@ if TYPE_CHECKING:
 
 
 class ProgramQuerySet(models.QuerySet):
-    def reservable(self, at: Optional[datetime.datetime] = None) -> 'ProgramQuerySet':
+    def reservable(self, at: datetime.datetime | None = None) -> ProgramQuerySet:
         if not at:
             at = now()
         return self.filter(reservation_start__lte=at, reservation_end__gte=at)
 
-    def valid(self, at: Optional[datetime.datetime] = None) -> 'ProgramQuerySet':
+    def valid(self, at: datetime.datetime | None = None) -> ProgramQuerySet:
         if not at:
             at = now()
         return self.filter(Q(invalid_after__isnull=True) | Q(invalid_after__gt=at))
@@ -98,20 +99,20 @@ class Program(models.Model):
 
         return Zone.objects.filter(rows__in=self.rows.all()).distinct()
 
-    def get_block_map(self, zone: Optional['Zone'] = None) -> Dict[int, Set[int]]:
+    def get_block_map(self, zone: Zone | None = None) -> dict[int, set[int]]:
         """
         Get a dict mapping row IDs to a set of blocked Numbers per row.
 
         :param zone: Optional zone to filter for.
         :return: Dict of row ID <-> excluded numbers set
         """
-        blocks_by_row_id: Dict[int, Set[int]] = defaultdict(set)
+        blocks_by_row_id: dict[int, set[int]] = defaultdict(set)
         qs = self.blocks.filter(row__zone=zone) if zone else self.blocks.all()
         for block in qs:
             blocks_by_row_id[block.row_id] |= block.get_excluded_set()
         return dict(blocks_by_row_id)
 
-    def get_rows_and_numbers(self, zone: None = None) -> Iterator[Tuple['Row', List[int]]]:
+    def get_rows_and_numbers(self, zone: None = None) -> Iterator[tuple[Row, list[int]]]:
         """
         Iterate over Row objects and Numbers available in them,
         taking into account row blocks and per-program blocks.
@@ -144,15 +145,15 @@ class Program(models.Model):
     def reserve(  # noqa: C901
         self,
         *,
-        zone: Optional['Zone'],
+        zone: Zone | None,
         count: int,
-        user: Optional[AbstractBaseUser] = None,
-        name: Optional[str] = None,
-        email: Optional[str] = None,
-        phone: Optional[str] = None,
+        user: AbstractBaseUser | None = None,
+        name: str | None = None,
+        email: str | None = None,
+        phone: str | None = None,
         allow_scatter: bool = False,
         attempt_sequential: bool = True,
-    ) -> Iterator['Ticket']:
+    ) -> Iterator[Ticket]:
         """
         Reserve `count` tickets from the zone `zone`.
 
@@ -206,7 +207,7 @@ class Program(models.Model):
                 f'{self}\'s per-user ticket limit {self.max_tickets_per_user}'
             )
 
-        def _reserve_inner(count: int, zone: 'Zone', allow_partial: bool) -> Iterator['Ticket']:
+        def _reserve_inner(count: int, zone: Zone, allow_partial: bool) -> Iterator[Ticket]:
             reservation_status = zone.get_reservation_status(self)
             new_reservations: list[tuple[Row, int]] = []
             reserve_count = count  # Count remaining to reserve

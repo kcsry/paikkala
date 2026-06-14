@@ -1,4 +1,3 @@
-from typing import Type
 
 from django.forms import CheckboxSelectMultiple
 from django.http import HttpResponse
@@ -49,5 +48,5 @@ class PrintView(FormView, DetailView):
     def get_ticket_configuration(self) -> PrintingConfiguration:
         return PrintingConfiguration()
 
-    def get_drawer_class(self) -> Type[TicketDrawer]:
+    def get_drawer_class(self) -> type[TicketDrawer]:
         return TicketDrawer
