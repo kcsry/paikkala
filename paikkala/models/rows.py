@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import prefetch_related_objects
 
 from paikkala.utils.ranges import parse_number_set, validate_number_set
 from paikkala.utils.runs import find_runs, following_integer
@@ -57,7 +60,7 @@ class Row(models.Model):
     def reserve(
         self,
         *,
-        program: 'Program',
+        program: Program,
         count: int,
         user: AbstractBaseUser | None = None,
         name: str | None = None,
@@ -65,13 +68,22 @@ class Row(models.Model):
         phone: str | None = None,
         attempt_sequential: bool = True,
         excluded_numbers: set[int] | None = None,
-    ) -> Iterator['Ticket']:
+        reserved_numbers: set[int] | None = None,
+    ) -> Iterator[Ticket]:
         """
         Reserve N seats from this row.
 
         May return less than N seats if there are not enough seats available.
+
+        :param reserved_numbers: Seat numbers already taken in this row, if known.
         """
-        reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
+        if reserved_numbers is None:
+            reserved_numbers = set(program.tickets.filter(row=self).values_list('number', flat=True))
+
+        # Opportunistically prefetch seat qualifiers now.
+        if 'seat_qualifiers' not in getattr(self.zone, '_prefetched_objects_cache', {}):
+            prefetch_related_objects([self.zone], 'seat_qualifiers')
+
         unreserved_numbers = [
             number
             for number in self.get_numbers(additional_excluded_set=excluded_numbers)
@@ -88,12 +100,12 @@ class Row(models.Model):
                 unreserved_numbers = acceptable_sequential_runs[0]
                 assert len(unreserved_numbers) >= count
 
-        for _ in range(count):
-            try:
-                number = unreserved_numbers.pop(0)
-            except IndexError:
-                break
-            yield program.tickets.create(
+        from paikkala.models.tickets import Ticket
+
+        tickets = []
+        for number in unreserved_numbers[:count]:
+            ticket = Ticket(
+                program=program,
                 row=self,
                 zone=self.zone,
                 user=user,
@@ -102,3 +114,6 @@ class Row(models.Model):
                 phone=phone,
                 number=number,
             )
+            ticket.prepare_save()
+            tickets.append(ticket)
+        yield from program.tickets.bulk_create(tickets)

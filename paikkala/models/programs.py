@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.utils.timezone import now
 
 from paikkala.excs import (
@@ -23,7 +23,7 @@ from paikkala.excs import (
 if TYPE_CHECKING:
     from paikkala.models.rows import Row
     from paikkala.models.tickets import Ticket
-    from paikkala.models.zones import Zone
+    from paikkala.models.zones import Zone, ZoneReservationStatus
 
 
 class ProgramQuerySet(models.QuerySet):
@@ -36,6 +36,15 @@ class ProgramQuerySet(models.QuerySet):
         if not at:
             at = now()
         return self.filter(Q(invalid_after__isnull=True) | Q(invalid_after__gt=at))
+
+    def with_ticket_counts(self) -> ProgramQuerySet:
+        """
+        Annotate each program with `num_tickets`, so `remaining_tickets`
+        can be read without an extra COUNT query per program.
+
+        Useful for listing pages that would otherwise issue one COUNT per row.
+        """
+        return self.annotate(num_tickets=Count('tickets'))
 
 
 class Program(models.Model):
@@ -127,20 +136,67 @@ class Program(models.Model):
         for row in row_qs:
             yield (row, row.get_numbers(additional_excluded_set=block_map.get(row.id, set())))
 
+    def get_reservation_statuses(self, zones: Iterator[Zone] | None = None) -> dict[Zone, ZoneReservationStatus]:
+        """
+        Compute the reservation status of several zones at once.
+
+        Unlike calling `Zone.get_reservation_status` in a loop (which issues
+        ~3 queries per zone), this computes everything in a constant number of
+        queries regardless of the number of zones, which matters a lot when
+        rendering the reservation form under load.
+
+        :param zones: Zones to compute for; defaults to all of the program's zones.
+        :return: Dict of Zone <-> ZoneReservationStatus.
+        """
+        from paikkala.models.zones import RowReservationStatus, ZoneReservationStatus
+
+        zone_list = list(self.zones if zones is None else zones)
+
+        reservation_count = dict(self.tickets.values_list('row').annotate(n=Count('id')))
+        block_map = self.get_block_map()
+        rows_by_zone_id: dict[int, list[Row]] = defaultdict(list)
+        for row in self.rows.filter(zone__in=zone_list).select_related('zone'):
+            rows_by_zone_id[row.zone_id].append(row)
+
+        statuses: dict[Zone, ZoneReservationStatus] = {}
+        for zone in zone_list:
+            row_status_map = {}
+            for row in rows_by_zone_id.get(zone.id, ()):
+                blocked = block_map.get(row.id, set())
+                capacity = len(row.get_numbers(additional_excluded_set=blocked))
+                reserved = reservation_count.get(row.id, 0)
+                row_status_map[row] = RowReservationStatus(
+                    capacity=capacity,
+                    reserved=reserved,
+                    remaining=capacity - reserved,
+                    blocked_set=blocked,
+                )
+            statuses[zone] = ZoneReservationStatus(zone=zone, program=self, data=row_status_map)
+        return statuses
+
     def is_reservable(self) -> bool:
         if not (self.reservation_start and self.reservation_end):
             return False
         return self.reservation_start <= now() <= self.reservation_end
 
-    def check_reservable(self) -> None:
+    def check_reservable(self, *, total_reserved: int | None = None) -> None:
         if not self.is_reservable():
             raise Unreservable(f'{self} is not reservable at this time')
-        if self.remaining_tickets <= 0:
+        # `total_reserved` may be passed in by callers that have already counted the
+        # program's tickets, to avoid a redundant COUNT query on the reservation path.
+        if total_reserved is None:
+            total_reserved = self.tickets.count()
+        if total_reserved >= self.max_tickets:
             raise MaxTicketsReached(f'{self} has no remaining tickets.')
 
     @property
     def remaining_tickets(self) -> int:
-        return self.max_tickets - self.tickets.count()
+        # Prefer an annotated count (see `ProgramQuerySet.with_ticket_counts`)
+        # to avoid an extra COUNT query when listing many programs at once.
+        num_tickets = getattr(self, 'num_tickets', None)
+        if num_tickets is None:
+            num_tickets = self.tickets.count()
+        return self.max_tickets - num_tickets
 
     def reserve(  # noqa: C901
         self,
@@ -189,13 +245,19 @@ class Program(models.Model):
             raise BatchSizeOverflow(
                 f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted'
             )
-        self.check_reservable()
-
-        # User and program quota checks
         if allow_scatter:
             attempt_sequential = False
 
-        total_reserved = sum(z.get_reservation_status(self).total_reserved for z in self.zones)
+        # User and program quota checks.
+        # The total number of tickets reserved for this program equals the sum of
+        # every zone's `total_reserved`, since each ticket belongs to exactly one
+        # of the program's rows (and thus one zone). Counting tickets directly is a
+        # single cheap query, whereas computing each zone's reservation status would
+        # build per-row capacities and block maps for the entire program just to
+        # discard everything but the totals. We compute it once and reuse it for
+        # `check_reservable()` too.
+        total_reserved = self.tickets.count()
+        self.check_reservable(total_reserved=total_reserved)
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached(
                 f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}'
@@ -240,6 +302,7 @@ class Program(models.Model):
                     phone=phone,
                     attempt_sequential=attempt_sequential and not allow_scatter,
                     excluded_numbers=reservation_status[row].blocked_set,
+                    reserved_numbers=reservation_status[row].reserved_set,
                 )
 
         # Single zone: trivial case, scatter is handled in _reserve_inner

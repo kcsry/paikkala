@@ -1,8 +1,11 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
+from collections import defaultdict
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from django.db import models
-from django.db.models import Count, Sum
+from django.db.models import Sum
 
 if TYPE_CHECKING:
     from paikkala.models.programs import Program
@@ -15,10 +18,14 @@ class RowReservationStatus:
     reserved: int
     remaining: int
     blocked_set: set[int]
+    # The concrete set of reserved seat numbers. Only the allocation path
+    # (`Zone.get_reservation_status`) populates this; the batched display path
+    # (`Program.get_reservation_statuses`) only needs counts, so it's optional.
+    reserved_set: set[int] = field(default_factory=set)
 
 
 class ZoneReservationStatus(dict):
-    def __init__(self, zone: 'Zone', program: 'Program', data: dict['Row', RowReservationStatus]) -> None:
+    def __init__(self, zone: Zone, program: Program, data: dict[Row, RowReservationStatus]) -> None:
         super().__init__(data)
         self.program = program
         self.zone = zone
@@ -67,21 +74,26 @@ class Zone(models.Model):
         self.clean()
         super().save(**kwargs)
 
-    def get_reservation_status(self, program: 'Program') -> ZoneReservationStatus:
-        reservation_count = dict(
-            self.tickets.filter(program=program).values('row').annotate(n=Count('id')).values_list('row', 'n')
-        )
+    def get_reservation_status(self, program: Program) -> ZoneReservationStatus:
+        reserved_by_row: dict[int, set[int]] = defaultdict(set)
+        for row_id, number in self.tickets.filter(program=program).values_list('row', 'number'):
+            reserved_by_row[row_id].add(number)
+
         row_status_map = {}
         block_map = program.get_block_map(zone=self)
         for row in program.rows.filter(zone=self):
+            assert row.zone_id == self.id
+            row.zone = self  # We thus know this to be true.
             blocked = block_map.get(row.id, set())
             capacity = len(row.get_numbers(additional_excluded_set=blocked))
-            reserved = reservation_count.get(row.id, 0)
+            reserved_set = reserved_by_row.get(row.id, set())
+            reserved = len(reserved_set)
             row_status_map[row] = RowReservationStatus(
                 capacity=capacity,
                 reserved=reserved,
                 remaining=capacity - reserved,
                 blocked_set=blocked,
+                reserved_set=reserved_set,
             )
         return ZoneReservationStatus(
             zone=self,

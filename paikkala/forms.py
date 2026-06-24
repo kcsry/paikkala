@@ -1,4 +1,5 @@
 import logging
+import random
 import time
 
 from django import forms
@@ -59,7 +60,13 @@ class ReservationForm(forms.ModelForm):
             else:
                 zone_field.choices = []
             zone_field.choices += [(z.id, z) for z in zone_field.queryset]
-            zone_field.populate_reservation_statuses(program=self.instance)
+            # The per-zone "seats remaining" figures are only used to render the
+            # widget. When the form is bound (i.e. a reservation is being
+            # submitted) the widget is normally not re-rendered, so skip the
+            # work — this removes a chunk of queries from every POST during a
+            # signup rush.
+            if not self.is_bound:
+                zone_field.populate_reservation_statuses(program=self.instance)
             if len(zone_field.choices) == 1 and not self.instance.numbered_seats:
                 zone_field.widget = HiddenInput()
                 zone_field.initial = zone_field.choices[0][0]
@@ -103,4 +110,9 @@ class ReservationForm(forms.ModelForm):
                     f'seats in zone {zone} for {self.instance}; {retry_attempts} retries left'
                 )
                 log.warning(log_message, exc_info=True)
-                time.sleep(0.3)
+                # Jittered backoff: a fixed sleep makes every colliding request
+                # wake up and collide again in lockstep, and the longer the
+                # sleep the longer a web worker + DB connection is tied up. A
+                # short randomised sleep spreads the retries out and frees
+                # workers faster during a signup stampede.
+                time.sleep(random.uniform(0.05, 0.15))

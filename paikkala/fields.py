@@ -30,11 +30,7 @@ class ReservationZoneChoiceField(ModelChoiceField):
     label_format = _('{zone} ({remaining} seats remain)')
 
     def populate_reservation_statuses(self, program: Program) -> None:
-        self.reservation_statuses = {
-            zone: zone.get_reservation_status(program=program)
-            for zone
-            in self.queryset
-        }
+        self.reservation_statuses = program.get_reservation_statuses(zones=self.queryset)
 
     def label_from_instance(self, obj: Zone) -> str:
         if obj in self.reservation_statuses:
