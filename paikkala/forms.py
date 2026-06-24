@@ -20,7 +20,7 @@ class ReservationForm(forms.ModelForm):
 
     zone = ReservationZoneChoiceField(queryset=Zone.objects.none(), required=False, empty_label='Any')
     count = forms.IntegerField(min_value=1, initial=1)
-    allow_scatter = forms.BooleanField(required=True)
+    allow_scatter = forms.BooleanField(required=False)
 
     class Meta:
         fields = ()
