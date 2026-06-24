@@ -17,8 +17,9 @@ log = logging.getLogger(__name__)
 class ReservationForm(forms.ModelForm):
     max_count = 5
     integrity_error_retries = 10
+    any_zone_label = 'Any'
 
-    zone = ReservationZoneChoiceField(queryset=Zone.objects.none(), required=False, empty_label='Any')
+    zone = ReservationZoneChoiceField(queryset=Zone.objects.none(), required=False, empty_label=any_zone_label)
     count = forms.IntegerField(min_value=1, initial=1)
     allow_scatter = forms.BooleanField(required=False)
 
@@ -48,7 +49,8 @@ class ReservationForm(forms.ModelForm):
         self.fields['phone'] = CharField(label='Phone number', required=True)
 
     def mangle_zone_field(self) -> None:
-        zone_field = self.fields['zone']
+        zone_field: ReservationZoneChoiceField = self.fields['zone']
+        zone_field.empty_label = self.any_zone_label
         zone_field.queryset = self.instance.zones.all().order_by('ordering', 'name')
 
         if isinstance(zone_field, ReservationZoneChoiceField):
@@ -56,7 +58,7 @@ class ReservationForm(forms.ModelForm):
             # parent fields.  That would be all too easy.
             # ReservationZoneSelect.create_option will process the `z` object here to something sane.
             if self.instance.numbered_seats:
-                zone_field.choices = [('', 'Any')]
+                zone_field.choices = [('', self.any_zone_label)]
             else:
                 zone_field.choices = []
             zone_field.choices += [(z.id, z) for z in zone_field.queryset]
