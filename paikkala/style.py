@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import struct
 from colorsys import hsv_to_rgb
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from django.conf import settings
@@ -15,20 +16,12 @@ if TYPE_CHECKING:
 STYLE_SECRET_SAUCE = force_bytes(getattr(settings, 'PAIKKALA_STYLE_SECRET_SAUCE', ''))
 
 
-# TODO(3.7): dataclass-ify
+@dataclass
 class ProgramStyle:
-    def __init__(
-        self,
-        *,
-        accent_color: str,
-        angle: float,
-        color1: str,
-        color2: str,
-    ) -> None:
-        self.accent_color = accent_color
-        self.angle = angle
-        self.color1 = color1
-        self.color2 = color2
+    accent_color: str
+    angle: float
+    color1: str
+    color2: str
 
 
 def decimal_rgb_to_hex(rgb: tuple[int | float, int | float, int | float]) -> str:
