@@ -1,8 +1,10 @@
 import pytest
 
+from paikkala.models import Program
+
 
 @pytest.mark.django_db
-def test_smoke_printing(jussi_program):
+def test_smoke_printing(jussi_program: Program) -> None:
     pytest.importorskip('reportlab')
     from paikkala.printing import generate_ticket_pdf
     from paikkala.printing.configuration import PrintingConfiguration

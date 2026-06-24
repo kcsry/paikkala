@@ -5,7 +5,7 @@ from paikkala.models import Program
 
 
 @pytest.mark.django_db
-def test_demo_data():
+def test_demo_data() -> None:
     assert not Program.objects.exists()
     call_command('paikkala_load_demo_data', yes=True)
     prog = Program.objects.get()

@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -18,10 +17,22 @@ class Migration(migrations.Migration):
             name='Program',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(help_text='please be specific; this is not qualified by event name or similar', max_length=64)),
+                (
+                    'name',
+                    models.CharField(
+                        help_text='please be specific; this is not qualified by event name or similar', max_length=64
+                    ),
+                ),
                 ('reservation_start', models.DateTimeField(blank=True, null=True)),
                 ('reservation_end', models.DateTimeField(blank=True, null=True)),
-                ('invalid_after', models.DateTimeField(blank=True, help_text='the time after which tickets for this program are considered out-of-date, e.g. for hiding from UI', null=True)),
+                (
+                    'invalid_after',
+                    models.DateTimeField(
+                        blank=True,
+                        help_text='the time after which tickets for this program are considered out-of-date, e.g. for hiding from UI',
+                        null=True,
+                    ),
+                ),
                 ('max_tickets', models.IntegerField()),
             ],
         ),
@@ -42,9 +53,24 @@ class Migration(migrations.Migration):
                 ('ctime', models.DateTimeField(auto_now_add=True)),
                 ('number', models.IntegerField()),
                 ('key', models.CharField(max_length=8, unique=True)),
-                ('program', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tickets', to='paikkala.Program')),
-                ('row', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tickets', to='paikkala.Row')),
-                ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    'program',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name='tickets', to='paikkala.Program'
+                    ),
+                ),
+                (
+                    'row',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name='tickets', to='paikkala.Row'
+                    ),
+                ),
+                (
+                    'user',
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
@@ -58,12 +84,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='ticket',
             name='zone',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tickets', to='paikkala.Zone'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name='tickets', to='paikkala.Zone'
+            ),
         ),
         migrations.AddField(
             model_name='row',
             name='zone',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rows', to='paikkala.Zone'),
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, related_name='rows', to='paikkala.Zone'
+            ),
         ),
         migrations.AddField(
             model_name='program',

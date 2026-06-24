@@ -4,7 +4,7 @@ from paikkala.models import Program, Ticket
 
 
 @pytest.mark.django_db
-def test_sibeliustalo_permanto_qualifiers(jussi_program: Program):
+def test_sibeliustalo_permanto_qualifiers(jussi_program: Program) -> None:
     zone = jussi_program.zones.get(name='Permanto')
     row = zone.rows.get(name='6')
     left_ticket: Ticket = jussi_program.tickets.create(

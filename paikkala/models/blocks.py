@@ -1,4 +1,3 @@
-
 from django.db import models
 
 from paikkala.utils.ranges import parse_number_set, validate_number_set

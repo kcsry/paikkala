@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('paikkala', '0004_texts'),
     ]
@@ -13,6 +12,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='program',
             name='automatic_max_tickets',
-            field=models.BooleanField(default=False, help_text='Recompute the maximum tickets field automatically based on row capacity'),
+            field=models.BooleanField(
+                default=False, help_text='Recompute the maximum tickets field automatically based on row capacity'
+            ),
         ),
     ]

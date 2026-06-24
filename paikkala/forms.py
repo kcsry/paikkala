@@ -43,7 +43,7 @@ class ReservationForm(forms.ModelForm):
         self.fields['email'] = EmailField(
             label='Email address',
             required=True,
-            initial=self.user.email if self.user is not None else ''
+            initial=self.user.email if self.user is not None else '',
         )
         self.fields['phone'] = CharField(label='Phone number', required=True)
 
@@ -99,7 +99,7 @@ class ReservationForm(forms.ModelForm):
                             zone=zone,
                             count=count,
                             allow_scatter=self.cleaned_data['allow_scatter'],
-                        )
+                        ),
                     )
             except IntegrityError:  # pragma: no cover
                 if retry_attempts <= 0:

@@ -60,7 +60,6 @@ exclude = [
     "tests",
 ]
 ignore = [
-    "ANN101",
     "ANN401",
 ]
 select = [
@@ -93,3 +92,9 @@ max-complexity = 10
 
 [tool.ruff.format]
 quote-style = "preserve"
+
+[tool.coverage.run]
+omit = [
+    "*/migrations/*",
+    "*/management/*",
+]

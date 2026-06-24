@@ -28,19 +28,10 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
         'max_tickets_per_user',
         'max_tickets_per_batch',
     )
-    filter_horizontal = (
-        'rows',
-    )
-    list_filter = (
-        'event_name',
-        'room',
-    )
-    list_select_related = (
-        'room',
-    )
-    search_fields = (
-        'name',
-    )
+    filter_horizontal = ('rows',)
+    list_filter = ('event_name', 'room')
+    list_select_related = ('room',)
+    search_fields = ('name',)
     inlines = [
         PerProgramBlockInline,
     ]
@@ -48,7 +39,7 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
     def reserved_tickets(self, instance: Program) -> int:
         return instance.tickets.count()
 
-    def save_related(self, request, form, formsets, change):  # noqa: ANN001,ANN201
+    def save_related(self, request, form, formsets, change) -> None:  # noqa: ANN001,ANN201
         super().save_related(request, form, formsets, change)
         # Deferred calculation of max tickets when creating a new Program
         if not change and form.instance.automatic_max_tickets:

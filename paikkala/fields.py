@@ -1,3 +1,5 @@
+from collections.abc import Callable
+from typing import Any
 
 from django.forms import ModelChoiceField, RadioSelect
 from django.utils.translation import gettext_lazy as _
@@ -7,12 +9,18 @@ from paikkala.models.zones import ZoneReservationStatus
 
 
 class ReservationZoneSelect(RadioSelect):
-    def __init__(self, attrs=None, choices=(), reservation_statuses=None, format_label=str) -> None:  # noqa: ANN001
+    def __init__(
+        self,
+        attrs: dict[str, Any] | None = None,
+        choices=(),  # noqa: ANN001
+        reservation_statuses: dict[Zone, ZoneReservationStatus] | None = None,
+        format_label: Callable[[Any], str] = str,
+    ) -> None:
         super().__init__(attrs, choices)
         self.reservation_statuses = reservation_statuses or {}
         self.format_label = format_label
 
-    def create_option(self, *args, **kwargs):  # noqa
+    def create_option(self, *args, **kwargs) -> dict[str, Any]:  # noqa
         op = super().create_option(*args, **kwargs)
         if isinstance(op['label'], Zone):
             zone = op['label']

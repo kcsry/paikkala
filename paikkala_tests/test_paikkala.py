@@ -15,7 +15,7 @@ from paikkala.models import Program
 
 
 @pytest.mark.django_db
-def test_is_reservable(jussi_program):
+def test_is_reservable(jussi_program: Program) -> None:
     assert jussi_program.is_reservable()
     assert jussi_program in Program.objects.reservable()
     jussi_program.reservation_end = None
@@ -25,7 +25,7 @@ def test_is_reservable(jussi_program):
 
 
 @pytest.mark.django_db
-def test_reserve_non_scatter_single_zone(jussi_program):
+def test_reserve_non_scatter_single_zone(jussi_program: Program) -> None:
     zone = jussi_program.zones.get(name='Aitio 1 (vasen)')
     assert zone.capacity == 9
     with pytest.raises(NoCapacity):
@@ -37,7 +37,7 @@ def test_reserve_non_scatter_single_zone(jussi_program):
 
 
 @pytest.mark.django_db
-def test_reserve_non_scatter_multi_zone(jussi_program):
+def test_reserve_non_scatter_multi_zone(jussi_program: Program) -> None:
     jussi_program.max_tickets = 1_000
     max_zone_capacity = max(z.get_reservation_status(jussi_program).total_capacity for z in jussi_program.zones)
     n_to_reserve = 21
@@ -49,14 +49,14 @@ def test_reserve_non_scatter_multi_zone(jussi_program):
 
 
 @pytest.mark.django_db
-def test_reserve_limit(jussi_program):
+def test_reserve_limit(jussi_program: Program) -> None:
     zone = jussi_program.zones.get(name='Permanto')
     with pytest.raises(MaxTicketsReached):
         list(jussi_program.reserve(zone=zone, count=jussi_program.max_tickets + 10))
 
 
 @pytest.mark.django_db
-def test_reserve_scatter_single_zone(jussi_program):
+def test_reserve_scatter_single_zone(jussi_program: Program) -> None:
     jussi_program.max_tickets = 1_000
     zone = jussi_program.zones.get(name='Permanto')
     assert zone.capacity == 650
@@ -72,7 +72,7 @@ def test_reserve_scatter_single_zone(jussi_program):
 
 
 @pytest.mark.django_db
-def test_reserve_scatter_multi_zone(scatter_program):
+def test_reserve_scatter_multi_zone(scatter_program) -> None:
     scatter_program.max_tickets = 1_000_000
     assert scatter_program.is_reservable()
 
@@ -90,13 +90,13 @@ def test_reserve_scatter_multi_zone(scatter_program):
 
 
 @pytest.mark.django_db
-def test_reserve_scatter_multi_zone_fail(scatter_program):
+def test_reserve_scatter_multi_zone_fail(scatter_program) -> None:
     with pytest.raises(NoCapacity):
         list(scatter_program.reserve(zone=None, count=1_000, allow_scatter=True))
 
 
 @pytest.mark.django_db
-def test_reserve_single_zone_query_count_independent_of_zone_count(jussi_program):
+def test_reserve_single_zone_query_count_independent_of_zone_count(jussi_program: Program) -> None:
     # Reserving from a single zone must not compute the reservation status of
     # *every* zone in the program (regression test for the multi-zone scatter
     # change, which made each reservation O(number of zones) in DB queries).
@@ -113,7 +113,7 @@ def test_reserve_single_zone_query_count_independent_of_zone_count(jussi_program
 
 
 @pytest.mark.django_db
-def test_with_ticket_counts_annotation(jussi_program):
+def test_with_ticket_counts_annotation(jussi_program: Program) -> None:
     from django.db import connection
     from django.test.utils import CaptureQueriesContext
 
@@ -135,7 +135,7 @@ def test_with_ticket_counts_annotation(jussi_program):
 
 
 @pytest.mark.django_db
-def test_reserve_user_required(jussi_program):
+def test_reserve_user_required(jussi_program: Program) -> None:
     jussi_program.require_user = True
     jussi_program.save()
     anon = AnonymousUser()
@@ -149,7 +149,7 @@ def test_reserve_user_required(jussi_program):
 
 
 @pytest.mark.django_db
-def test_reserve_user_limits(jussi_program, random_user):
+def test_reserve_user_limits(jussi_program: Program, random_user) -> None:
     jussi_program.require_user = True
     jussi_program.max_tickets_per_user = 2
     jussi_program.save()
@@ -162,7 +162,7 @@ def test_reserve_user_limits(jussi_program, random_user):
 
 
 @pytest.mark.django_db
-def test_reserve_batch_limits(jussi_program, random_user):
+def test_reserve_batch_limits(jussi_program: Program, random_user) -> None:
     jussi_program.max_tickets_per_batch = 5
     jussi_program.save()
     zone = jussi_program.zones.get(name='Permanto')
@@ -172,7 +172,7 @@ def test_reserve_batch_limits(jussi_program, random_user):
 
 
 @pytest.mark.django_db
-def test_automatic_max_tickets(jussi_program):
+def test_automatic_max_tickets(jussi_program: Program) -> None:
     jussi_program.automatic_max_tickets = True
     jussi_program.clean()  # As called by admin, etc.
     jussi_program.save()
@@ -181,7 +181,7 @@ def test_automatic_max_tickets(jussi_program):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('attempt_sequential', (False, True))
-def test_attempt_sequential(lattia_program, attempt_sequential):
+def test_attempt_sequential(lattia_program, attempt_sequential) -> None:
     zone = lattia_program.zones[0]
     tickets = list(lattia_program.reserve(zone=zone, count=3, attempt_sequential=attempt_sequential))
     assert [t.number for t in tickets] == ([1, 2, 6] if not attempt_sequential else [6, 7, 8])

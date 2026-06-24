@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('paikkala', '0012_excluded_numbers_validator'),
     ]
@@ -18,7 +17,12 @@ class Migration(migrations.Migration):
                 ('start_number', models.IntegerField()),
                 ('end_number', models.IntegerField()),
                 ('text', models.CharField(max_length=64)),
-                ('zone', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='seat_qualifiers', to='paikkala.Zone')),
+                (
+                    'zone',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name='seat_qualifiers', to='paikkala.Zone'
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
