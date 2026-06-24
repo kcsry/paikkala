@@ -93,3 +93,9 @@ max-complexity = 10
 
 [tool.ruff.format]
 quote-style = "preserve"
+
+[tool.coverage.run]
+omit = [
+    "*/migrations/*",
+    "*/management/*",
+]
