@@ -26,7 +26,7 @@ def test_reserve(jussi_program: Program, user_client) -> None:
 
 
 @pytest.mark.django_db
-def test_reserve_allow_scatter_e2e(scatter_program, user_client):
+def test_reserve_allow_scatter_e2e(scatter_program: Program, user_client) -> None:
     # Every row in scatter_program has exactly one free seat, so a two-seat
     # request can only be satisfied by scattering across rows.
     url = reverse('reserve', kwargs={'pk': scatter_program.pk})
