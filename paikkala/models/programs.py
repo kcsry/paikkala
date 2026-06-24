@@ -332,5 +332,5 @@ class Program(models.Model):
                     assert len(reserved) == count
                     break
             if len(reserved) < count:
-                raise NoCapacity('Unable to allocate {count} tickets total from any zone with scatter')
+                raise NoCapacity(f'Unable to allocate {count} tickets total from any zone with scatter')
             yield from reserved
