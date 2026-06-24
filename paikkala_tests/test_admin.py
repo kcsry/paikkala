@@ -7,7 +7,7 @@ from paikkala.models import Program
 
 @pytest.mark.django_db
 @pytest.mark.parametrize('automatic_max_tickets', (False, True))
-def test_program_creation(admin_client, sibeliustalo_zones, automatic_max_tickets):
+def test_program_creation(admin_client, sibeliustalo_zones, automatic_max_tickets) -> None:
     zone = next(z for z in sibeliustalo_zones if z.name == 'Permanto')
     row_ids = zone.rows.values_list('id', flat=True)
     room = sibeliustalo_zones[0].room

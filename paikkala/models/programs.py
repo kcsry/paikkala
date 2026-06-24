@@ -121,7 +121,7 @@ class Program(models.Model):
             blocks_by_row_id[block.row_id] |= block.get_excluded_set()
         return dict(blocks_by_row_id)
 
-    def get_rows_and_numbers(self, zone: None = None) -> Iterator[tuple[Row, list[int]]]:
+    def get_rows_and_numbers(self, zone: Zone | None = None) -> Iterator[tuple[Row, list[int]]]:
         """
         Iterate over Row objects and Numbers available in them,
         taking into account row blocks and per-program blocks.

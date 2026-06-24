@@ -39,7 +39,7 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
     def reserved_tickets(self, instance: Program) -> int:
         return instance.tickets.count()
 
-    def save_related(self, request, form, formsets, change):  # noqa: ANN001,ANN201
+    def save_related(self, request, form, formsets, change) -> None:  # noqa: ANN001,ANN201
         super().save_related(request, form, formsets, change)
         # Deferred calculation of max tickets when creating a new Program
         if not change and form.instance.automatic_max_tickets:

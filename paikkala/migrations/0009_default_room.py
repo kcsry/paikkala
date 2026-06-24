@@ -3,7 +3,7 @@
 from django.db import migrations
 
 
-def assign_default_room(apps, schema_editor):
+def assign_default_room(apps, schema_editor) -> None:
     Room = apps.get_model('paikkala', 'Room')
     Zone = apps.get_model('paikkala', 'Zone')
     Program = apps.get_model('paikkala', 'Program')

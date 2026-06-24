@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
-from .configuration import PrintingConfiguration, cm
-from .ticket_info import TicketInfo
+from paikkala.printing.configuration import cm
 
 if TYPE_CHECKING:
     from reportlab.pdfgen.canvas import Canvas
 
+    from paikkala.printing.configuration import PrintingConfiguration
+    from paikkala.printing.ticket_info import TicketInfo
+
 
 class TicketDrawer:
-    def __init__(self, canvas: "Canvas", configuration: PrintingConfiguration) -> None:
+    def __init__(self, canvas: Canvas, configuration: PrintingConfiguration) -> None:
         self.canvas = canvas
         self.configuration = configuration
 

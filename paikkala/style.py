@@ -1,12 +1,16 @@
+from __future__ import annotations
+
 import hashlib
 import hmac
 import struct
 from colorsys import hsv_to_rgb
+from typing import TYPE_CHECKING
 
 from django.conf import settings
 from django.utils.encoding import force_bytes
 
-from paikkala.models import Program
+if TYPE_CHECKING:
+    from paikkala.models import Program
 
 STYLE_SECRET_SAUCE = force_bytes(getattr(settings, 'PAIKKALA_STYLE_SECRET_SAUCE', ''))
 

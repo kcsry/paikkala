@@ -60,7 +60,6 @@ exclude = [
     "tests",
 ]
 ignore = [
-    "ANN101",
     "ANN401",
 ]
 select = [

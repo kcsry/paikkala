@@ -5,14 +5,14 @@ from paikkala.models import Program
 
 
 @pytest.mark.django_db
-def test_excluded_numbers(lattia_program):
+def test_excluded_numbers(lattia_program) -> None:
     zone = lattia_program.zones[0]
     tickets = list(lattia_program.reserve(zone=zone, count=7))
     assert [t.number for t in tickets] == [1, 2, 6, 7, 8, 9, 10]
 
 
 @pytest.mark.django_db
-def test_per_program_blocks(lattia_program):
+def test_per_program_blocks(lattia_program) -> None:
     lattia_program.automatic_max_tickets = True
     lattia_program.clean()
     lattia_program.save()
