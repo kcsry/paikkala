@@ -28,19 +28,10 @@ class ProgramAdmin(OptimizedRowQueryMixin, admin.ModelAdmin):
         'max_tickets_per_user',
         'max_tickets_per_batch',
     )
-    filter_horizontal = (
-        'rows',
-    )
-    list_filter = (
-        'event_name',
-        'room',
-    )
-    list_select_related = (
-        'room',
-    )
-    search_fields = (
-        'name',
-    )
+    filter_horizontal = ('rows',)
+    list_filter = ('event_name', 'room')
+    list_select_related = ('room',)
+    search_fields = ('name',)
     inlines = [
         PerProgramBlockInline,
     ]

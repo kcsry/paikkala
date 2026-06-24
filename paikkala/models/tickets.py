@@ -67,7 +67,7 @@ class Ticket(models.Model):
         # Filter in Python over `.all()` so this uses the zone's prefetched seat
         # qualifiers when available (see `Row.reserve`), avoiding a query per ticket.
         self.qualifier_text_cache = '\n'.join(
-            [q.text for q in self.zone.seat_qualifiers.all() if q.start_number <= self.number <= q.end_number]
+            [q.text for q in self.zone.seat_qualifiers.all() if q.start_number <= self.number <= q.end_number],
         )
 
     @property

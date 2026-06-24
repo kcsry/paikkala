@@ -243,7 +243,7 @@ class Program(models.Model):
 
         if count > self.max_tickets_per_batch:
             raise BatchSizeOverflow(
-                f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted'
+                f'Can only reserve {self.max_tickets_per_batch} tickets per batch for {self}, {count} attempted',
             )
         if allow_scatter:
             attempt_sequential = False
@@ -260,13 +260,13 @@ class Program(models.Model):
         self.check_reservable(total_reserved=total_reserved)
         if total_reserved + count > self.max_tickets:
             raise MaxTicketsReached(
-                f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}'
+                f'Reserving {count} more tickets would overdraw {self}\'s ticket limit {self.max_tickets}',
             )
 
         if user and self.tickets.filter(user=user).count() + count > self.max_tickets_per_user:
             raise MaxTicketsPerUserReached(
                 f'{user} reserving {count} more tickets would overdraw '
-                f'{self}\'s per-user ticket limit {self.max_tickets_per_user}'
+                f'{self}\'s per-user ticket limit {self.max_tickets_per_user}',
             )
 
         def _reserve_inner(count: int, zone: Zone, allow_partial: bool) -> Iterator[Ticket]:
@@ -289,7 +289,7 @@ class Program(models.Model):
                 if allow_scatter:
                     raise NoCapacity(f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone}')
                 raise NoCapacity(
-                    f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone} (try scatter?)'
+                    f'Could not allocate {reserve_count} of {count} requested tickets in zone {zone} (try scatter?)',
                 )
 
             for row, row_count in new_reservations:

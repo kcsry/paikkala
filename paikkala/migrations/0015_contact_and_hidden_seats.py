@@ -12,12 +12,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='program',
             name='numbered_seats',
-            field=models.BooleanField(default=True, help_text='Are seats numbered and should the numbers be shown to the user?'),
+            field=models.BooleanField(
+                default=True, help_text='Are seats numbered and should the numbers be shown to the user?'
+            ),
         ),
         migrations.AddField(
             model_name='program',
             name='require_contact',
-            field=models.BooleanField(default=False, help_text='Require contact information (name, email, phone number) from the user?'),
+            field=models.BooleanField(
+                default=False, help_text='Require contact information (name, email, phone number) from the user?'
+            ),
         ),
         migrations.AddField(
             model_name='ticket',

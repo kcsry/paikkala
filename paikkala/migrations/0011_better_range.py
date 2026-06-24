@@ -6,7 +6,6 @@ import paikkala.utils.ranges
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('paikkala', '0010_nonblank_room'),
     ]
@@ -15,6 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='perprogramblock',
             name='excluded_numbers',
-            field=models.CharField(blank=True, help_text='seat numbers to block from this row in this program', max_length=128, validators=[paikkala.utils.ranges.validate_number_set]),
+            field=models.CharField(
+                blank=True,
+                help_text='seat numbers to block from this row in this program',
+                max_length=128,
+                validators=[paikkala.utils.ranges.validate_number_set],
+            ),
         ),
     ]

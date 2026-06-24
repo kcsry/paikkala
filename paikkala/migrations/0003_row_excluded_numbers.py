@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('paikkala', '0002_more_limits'),
     ]
@@ -16,6 +15,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='row',
             name='excluded_numbers',
-            field=models.CharField(blank=True, help_text='seat numbers to consider not part of the row; comma-separated integers', max_length=128, validators=[django.core.validators.RegexValidator(re.compile('^\\d+(?:\\,\\d+)*\\Z'), code='invalid', message='Enter only digits separated by commas.')]),
+            field=models.CharField(
+                blank=True,
+                help_text='seat numbers to consider not part of the row; comma-separated integers',
+                max_length=128,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        re.compile('^\\d+(?:\\,\\d+)*\\Z'),
+                        code='invalid',
+                        message='Enter only digits separated by commas.',
+                    )
+                ],
+            ),
         ),
     ]

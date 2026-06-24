@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('paikkala', '0007_excluded_numbers'),
     ]
@@ -21,11 +20,15 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='zone',
             name='room',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='paikkala.Room'),
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='paikkala.Room'
+            ),
         ),
         migrations.AddField(
             model_name='program',
             name='room',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='paikkala.Room'),
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='paikkala.Room'
+            ),
         ),
     ]

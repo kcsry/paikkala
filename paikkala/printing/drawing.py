@@ -61,10 +61,5 @@ class TicketDrawer:
         elif self.configuration.text_align == "center":
             draw_text = self.canvas.drawCentredString
         for y, line in enumerate(self.configuration.get_text_lines(ticket)):
-            draw_text(
-                self.configuration.left_offset,
-                self.configuration.size_y
-                - 0.25 * cm
-                - (y + 1) * self.configuration.line_spacing,
-                str(line),
-            )
+            y_pos = self.configuration.size_y - 0.25 * cm - (y + 1) * self.configuration.line_spacing
+            draw_text(self.configuration.left_offset, y_pos, str(line))

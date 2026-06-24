@@ -36,7 +36,7 @@ class RelinquishView(MessageTemplateMixin, DeleteView):
             {
                 'ticket': self.object,
                 'program': self.object.program,
-            }
+            },
         )
         return resp
 
@@ -58,7 +58,7 @@ class ReservationView(MessageTemplateMixin, UpdateView):
                 {
                     'n': len(tickets),
                     'program': self.object,
-                }
+                },
             )
             return HttpResponseRedirect(self.get_success_url())
 

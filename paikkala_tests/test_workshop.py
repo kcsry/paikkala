@@ -27,7 +27,7 @@ def test_with_contact(workshop_program, workshop_zone, workshop_row, user_client
             name='Nimi',
             email='user@example.com',
             phone='0',
-        )
+        ),
     )
     assert len(tickets) == 2
     ticket = tickets[0]

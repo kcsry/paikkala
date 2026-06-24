@@ -34,7 +34,7 @@ def create_scatter_program(zones: list[Zone], room=None) -> Program:
                     phone=None,
                     attempt_sequential=False,
                     excluded_numbers=None,
-                )
+                ),
             )
 
         status = zone.get_reservation_status(program)

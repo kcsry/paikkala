@@ -5,7 +5,7 @@ from paikkala.models import Program, Row, SeatQualifier, Zone
 
 
 class TicketInfo(
-    namedtuple("_TicketInfo", ("program", "zone", "row", "number", "qualifier_texts"))
+    namedtuple("_TicketInfo", ("program", "zone", "row", "number", "qualifier_texts")),
 ):
     program: Program
     zone: Zone
@@ -48,8 +48,6 @@ def generate_ticket_infos(
                 row=row,
                 number=number,
                 qualifier_texts=[
-                    q.text
-                    for q in seat_qualifiers_by_zone_id[row.zone_id]
-                    if q.start_number <= number <= q.end_number
+                    q.text for q in seat_qualifiers_by_zone_id[row.zone_id] if q.start_number <= number <= q.end_number
                 ],
             )

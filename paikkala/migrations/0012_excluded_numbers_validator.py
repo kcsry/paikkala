@@ -6,7 +6,6 @@ import paikkala.utils.ranges
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('paikkala', '0011_better_range'),
     ]
@@ -15,6 +14,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='row',
             name='excluded_numbers',
-            field=models.CharField(blank=True, help_text='seat numbers to consider not part of the row; comma-separated integers', max_length=128, validators=[paikkala.utils.ranges.validate_number_set]),
+            field=models.CharField(
+                blank=True,
+                help_text='seat numbers to consider not part of the row; comma-separated integers',
+                max_length=128,
+                validators=[paikkala.utils.ranges.validate_number_set],
+            ),
         ),
     ]

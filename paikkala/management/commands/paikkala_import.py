@@ -31,5 +31,5 @@ class Command(BaseCommand):
         ):
             rows_str = ', '.join(name for name in zone.rows.values_list('name', flat=True))
             self.stdout.write(
-                f'{zone}: capacity {zone.capacity}, rows {rows_str}, {zone.seat_qualifiers.count()} qualifiers'
+                f'{zone}: capacity {zone.capacity}, rows {rows_str}, {zone.seat_qualifiers.count()} qualifiers',
             )

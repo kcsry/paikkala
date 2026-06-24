@@ -1,4 +1,3 @@
-
 from django.forms import CheckboxSelectMultiple
 from django.http import HttpResponse
 from django.views.generic import DetailView, FormView

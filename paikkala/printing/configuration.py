@@ -1,4 +1,3 @@
-
 from .ticket_info import TicketInfo
 
 inch = 72.0

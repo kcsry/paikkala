@@ -8,7 +8,7 @@ def assign_default_room(apps, schema_editor):
     Zone = apps.get_model('paikkala', 'Zone')
     Program = apps.get_model('paikkala', 'Program')
     if Zone.objects.exists() or Program.objects.exists():
-        default_room = (Room.objects.first() or Room.objects.create(name='Room'))
+        default_room = Room.objects.first() or Room.objects.create(name='Room')
         Zone.objects.filter(room__isnull=True).update(room=default_room)
         Program.objects.filter(room__isnull=True).update(room=default_room)
 
